@@ -1,0 +1,176 @@
+﻿@using VetClinicCapstone.Models.ViewModel;
+@model List<UserAndOwnerViewModel>
+@{
+	ViewData["Title"] = "View";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container-full">
+	<div class="content-header">
+		<div class="d-flex align-items-center">
+			<div class="mr-auto">
+				<h4 class="page-title">List of accounts</h4>
+			</div>
+
+		</div>
+	</div>
+
+
+	<section class="content">
+
+
+		<div class="col-12">
+			<div class="box">
+				<div class="box-body">
+					<h4 class="box-title">Account List</h4>
+
+					<div class="table-responsive">
+						<table id="example1" class="table table-bordered table-striped" style="width:100%">
+							<thead>
+								<tr>
+									@* <th>User ID</th> *@
+									<th>Name</th>
+									<th>Address</th>
+									<th>Email</th>
+									<th>Phone</th>
+									<th>Date Registered</th>
+									<th>Status</th>
+									<th>Option</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model)
+								{
+									<tr>
+										@* <td class="sorting_1">@item.UserDetail.User_ID</td> *@
+										<td>@item.OwnerDetail.Firstname
+										@item.OwnerDetail.Midname
+										@item.OwnerDetail.Lastname</td>
+										<td>@item.OwnerDetail.Street @item.OwnerDetail.City</td>
+										<td>@item.OwnerDetail.Email</td>
+										<td>@item.OwnerDetail.Phone</td>
+										<td>@item.UserDetail.DateRegistered.ToString("MMMM dd, yyyy")</td>
+										@if(item.UserDetail.IsActivated ==1)
+										{
+											<td><span class="badge badge-success-light badge-lg">Activated</span></td>
+										}
+										else
+										{
+
+											<td><span class="badge badge-danger-light badge-lg">Not Activated</span></td>
+										}
+
+										<td>
+											<a href="javascript:void(0);"
+											   onclick="activateUser(@item.UserDetail.User_ID)"
+											   data-toggle="tooltip"
+											   title="Accept"
+											   data-original-title="Accept"
+											   class="waves-effect waves-light btn btn-success-light btn-circle mx-5">
+												<span class="mdi mdi-check">
+													<span class="path1"></span>
+													<span class="path2"></span>
+												</span>
+											</a>
+											<a href="javascript:void(0);"
+											   onclick="deactivateUser(@item.UserDetail.User_ID)"
+											   data-toggle="tooltip"
+											   title="Reject"
+											   data-original-title="Reject"
+											   class="waves-effect waves-light btn btn-danger-light btn-circle mx-5">
+												<span class="mdi mdi-close">
+													<span class="path1"></span>
+													<span class="path2"></span>
+												</span>
+											</a>
+										</td>
+									</tr>
+								}
+
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- /.box-body -->
+			</div>
+		</div>
+	</section>
+</div>
+<script>
+	function activateUser(userID) {
+		$.ajax({
+			url: '@Url.Action("IsActivated", "UserAccount")',
+			type: 'POST',
+			data: { ID: userID },
+			success: function (response) {
+				if (response.success) { // Updated to 'response.success'
+					Swal.fire({
+						title: response.title, // Use response.title
+						text: response.message, // Use response.message
+						icon: 'success',
+						confirmButtonText: 'OK'
+					}).then((result) => {
+						if (result.isConfirmed) {
+							location.reload();
+						}
+					});
+				} else {
+					Swal.fire({
+						title: response.title, // Use response.title
+						text: response.message, // Use response.message
+						icon: 'error',
+						confirmButtonText: 'OK'
+					});
+				}
+			},
+			error: function () {
+				Swal.fire({
+					title: 'Error',
+					text: 'An error occurred while activating the user.',
+					icon: 'error',
+					confirmButtonText: 'OK'
+				});
+			}
+		});
+	}
+</script>
+<script>
+	function deactivateUser(userID) {
+		$.ajax({
+			url: '@Url.Action("IsDeactivated", "UserAccount")',
+			type: 'POST',
+			data: { ID: userID },
+			success: function (response) {
+				if (response.success) { // Updated to 'response.success'
+					Swal.fire({
+						title: response.title, // Use response.title
+						text: response.message, // Use response.message
+						icon: 'success',
+						confirmButtonText: 'OK'
+					}).then((result) => {
+						if (result.isConfirmed) {
+							location.reload();
+						}
+					});
+				} else {
+					Swal.fire({
+						title: response.title, // Use response.title
+						text: response.message, // Use response.message
+						icon: 'error',
+						confirmButtonText: 'OK'
+					});
+				}
+			},
+			error: function () {
+				Swal.fire({
+					title: 'Error',
+					text: 'An error occurred while activating the user.',
+					icon: 'error',
+					confirmButtonText: 'OK'
+				});
+			}
+		});
+	}
+</script>
+

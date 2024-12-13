@@ -1,0 +1,685 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Veterinary Clinic">
+    <meta name="author" content="Your Name">
+    <link rel="icon" href="~/images/urvan-removebg-preview.png">
+
+    <title>Urban Vet Animal Clinic</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Icons -->
+    <link href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="~/css/frontpage.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="home">
+                <img src="images/urvan-removebg-preview.png" class="img-fluid" alt="Brand Image">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#services">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+				<ul class="navbar-nav ml-auto">
+					@if(User.Identity.IsAuthenticated)
+					{
+						<!-- Show this section when the user is authenticated -->
+						<li class="nav-item mx-2">
+							<a class="btn btn-info" href="@Url.Action("Index", "UserProfile")">Profile</a>
+						</li>
+						<li class="nav-item">
+							<a class="btn btn-danger" href="@Url.Action("Logout", "UserLogin")">Logout</a>
+						</li>
+					}
+					else
+					{
+						<li class="nav-item mx-2">
+							<a class="btn btn-info" href="@Url.Action("Index","UserLogin")">Login</a>
+						</li>
+						<li class="nav-item">
+							<a class="btn btn-info" href="@Url.Action("Index","UserRegistration")">Register</a>
+						</li>
+					}
+
+					
+				</ul>
+            </div>
+        </div>
+    </nav>
+    
+	<style>
+		.navbar-nav img {
+			border: 2px solid #007bff; /* Optional border around the image */
+			margin-right: 10px; /* Space between image and buttons */
+		}
+	</style>
+    <!-- Header Carousel -->
+    <header>
+
+        <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="5000">
+            <ol class="carousel-indicators">
+                <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+            </ol>
+            <div class="carousel-inner">
+                <div class="carousel-item active" style="background-image: url('images/1stimage.jfif')">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5>Your Pet's Health is Our Priority</h5>
+                    </div>
+                </div>
+                <div class="carousel-item" style="background-image: url('images/2image.jfif')">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5>Professional Care for Your Pets</h5>
+                    </div>
+                </div>
+                <div class="carousel-item" style="background-image: url('images/3image.jfif')">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h5>Experienced Veterinary Team</h5>
+                    </div>
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+    </header>
+
+
+
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			let calendarEl = document.getElementById('calendar');
+			let selectedDays = [];
+			let calendar;
+
+			// Initialize the calendar with events
+			function updateCalendar(selectedDays, appointmentCounts) {
+				var today = new Date();
+				var startDate = new Date(today.getFullYear(), 0, 1); // Start of the year
+				var endDate = new Date(today.getFullYear(), 11, 31); // End of the year
+
+				var clinicEvents = getEventDays(selectedDays, startDate, endDate, appointmentCounts);
+
+				fetchEventData().then(serverEvents => {
+					var combinedEvents = clinicEvents.concat(serverEvents);
+
+					var eventsByDate = {};
+
+					combinedEvents.forEach(event => {
+						var eventDate = event.start;
+
+						if (eventsByDate[eventDate]) {
+							if (event.title.toLowerCase() === 'close' ||
+								(event.title.toLowerCase() === 'half day' && eventsByDate[eventDate].title.toLowerCase() !== 'close')) {
+								eventsByDate[eventDate] = event;
+							}
+						} else {
+							eventsByDate[eventDate] = event;
+						}
+					});
+
+					var filteredEvents = Object.values(eventsByDate);
+
+					if (calendar) {
+						calendar.destroy();
+					}
+
+					calendar = new FullCalendar.Calendar(calendarEl, {
+						initialView: 'dayGridMonth',
+						headerToolbar: {
+							left: 'prev,next today',
+							center: 'title',
+							right: 'dayGridMonth,dayGridWeek,dayGridDay'
+						},
+						events: function (fetchInfo, successCallback, failureCallback) {
+							successCallback(filteredEvents);
+						},
+						eventDidMount: function (info) {
+							var event = info.event;
+							var el = info.el;
+
+							switch (event.title.toLowerCase()) {
+								case 'half day':
+									el.style.backgroundColor = 'orange';
+									el.style.borderColor = 'orange';
+									break;
+								case 'close':
+									el.style.backgroundColor = 'red';
+									el.style.borderColor = 'red';
+									break;
+								case 'full':
+									el.style.backgroundColor = 'red';
+									el.style.borderColor = 'red';
+									break;
+								default:
+									el.style.backgroundColor = 'green';
+									el.style.borderColor = 'green';
+							}
+							el.style.color = 'white';
+						},
+						eventClick: function (info) {
+							const eventTitle = info.event.title.toLowerCase();
+							if (eventTitle === 'available') {
+								showBookingModal(info.event.start);
+							} else if (eventTitle === 'half day') {
+								showHalfDayModal(info.event.start);
+							} else {
+								console.log('Fully booked or not available for booking.');
+							}
+						}
+					});
+
+					calendar.render();
+				});
+			}
+
+			// Fetch clinic days from the server
+			function fetchClinicDays() {
+				return $.ajax({
+					url: '/AppointSchedule/GetClinicDays', // Adjust URL as per your controller route
+					type: 'GET'
+				});
+			}
+
+			// Fetch appointment counts from the server
+			function fetchAppointmentCounts() {
+				return $.ajax({
+					url: '/AppointSchedule/GetAppointmentCounts', // Adjust URL as per your controller route
+					type: 'GET'
+				});
+			}
+
+			// Initialize checkboxes for clinic days
+			function initializeCheckboxes(selectedDays) {
+				$('input[name="clinicDays"]').each(function () {
+					if (selectedDays.includes($(this).val())) {
+						$(this).prop('checked', true);
+					} else {
+						$(this).prop('checked', false);
+					}
+				});
+			}
+
+			// Get event days based on selected clinic days and appointment counts
+			function getEventDays(selectedDays, startDate, endDate, appointmentCounts) {
+				var events = [];
+				var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+				for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+					var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+					// Check if the day is in the selected days and greater than today's date
+					if (selectedDays.includes(dayName) && d > new Date()) {
+						var checkDate = d.toISOString().split('T')[0];
+						var appointmentCount = appointmentCounts[checkDate] || 0;
+
+						events.push({
+							title: appointmentCount >= 10 ? 'FULL' : 'AVAILABLE',
+							start: checkDate,
+							backgroundColor: appointmentCount >= 10 ? 'red' : 'green',
+							borderColor: appointmentCount >= 10 ? 'red' : 'green',
+							textColor: 'white'
+						});
+					}
+				}
+
+				return events;
+			}
+
+			// Fetch existing events from the server
+			function fetchEventData() {
+				return $.ajax({
+					url: '/AppointSchedule/GetEvents', // URL of the action method
+					type: 'GET'
+				});
+			}
+
+			// Show the booking modal
+			function showBookingModal(date) {
+				var localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+				$('#appointmentDate').val(localDate.toISOString().split('T')[0]);
+			
+
+				// Reset the appointment title to empty
+				$('#appointmentTitle').val('Available');
+
+				// Populate the time options for a full day
+				$('#appointmentTime').html(`
+					<option value="">-Select-</option>
+					<option value="8:00 AM">8:00 AM</option>
+					<option value="9:00 AM">9:00 AM</option>
+					<option value="10:00 AM">10:00 AM</option>
+					<option value="11:00 AM">11:00 AM</option>
+					<option value="12:00 PM">12:00 PM</option>
+					<option value="1:00 PM">1:00 PM</option>
+					<option value="2:00 PM">2:00 PM</option>
+					<option value="3:00 PM">3:00 PM</option>
+					<option value="4:00 PM">4:00 PM</option>
+					<option value="5:00 PM">5:00 PM</option>
+				`);
+
+
+				var modalElement = document.getElementById('bookingModal');
+				var modal = new bootstrap.Modal(modalElement);
+				modal.show();
+			}
+			// Show the Half Day modal
+			function showHalfDayModal(date) {
+				var localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+				$('#appointmentDate').val(localDate.toISOString().split('T')[0]);
+
+
+				// Set the value for #appointmentTitle
+				$('#appointmentTitle').val('Half Day');
+
+				// Populate the time options for a half day
+				$('#appointmentTime').html(`
+					<option value="">-Select-</option>
+					<option value="8:00 AM">8:00 AM</option>
+					<option value="9:00 AM">9:00 AM</option>
+					<option value="10:00 AM">10:00 AM</option>
+					<option value="11:00 AM">11:00 AM</option>
+					<option value="12:00 PM">12:00 PM</option>
+				`);
+		
+
+				var modalElement = document.getElementById('bookingModal');
+				var modal = new bootstrap.Modal(modalElement);
+				modal.show();
+			}
+
+			// Fetch clinic days and initialize the calendar
+			Promise.all([fetchClinicDays(), fetchAppointmentCounts()]).then(([days, counts]) => {
+				selectedDays = days;
+				var appointmentCounts = counts.reduce((acc, curr) => {
+					acc[curr.date] = curr.count;
+					return acc;
+				}, {});
+				initializeCheckboxes(selectedDays);
+				updateCalendar(selectedDays, appointmentCounts);
+
+				// Update the calendar when clinic days are changed
+				$('input[name="clinicDays"]').change(function () {
+					var day = $(this).val();
+					if ($(this).is(':checked')) {
+						selectedDays.push(day);
+					} else {
+						selectedDays = selectedDays.filter(d => d !== day);
+					}
+					updateCalendar(selectedDays, appointmentCounts);
+
+					// Save updated days to the server
+					$.ajax({
+						url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+						type: 'POST',
+						data: JSON.stringify(selectedDays),
+						contentType: 'application/json',
+						success: function (response) {
+							console.log('Save response:', response);
+							window.location.href = '/AppointmentSchedule/AppointmentOperation';
+						},
+						error: function (xhr, status, error) {
+							console.error('Error saving data:', xhr, status, error);
+							alert('Failed to save data. Please try again.');
+						}
+					});
+				});
+			});
+
+			$('#confirmBooking').click(function () {
+				var appointmentDate = $('#appointmentDate').val();
+				var appointmentTime = $('#appointmentTime').val();
+
+				$.ajax({
+					url: "@Url.Action("CreateAppoint", "AppointSchedule")",
+					type: 'POST',
+					data: JSON.stringify({
+						date: appointmentDate,
+						time: appointmentTime
+					}),
+					contentType: 'application/json',
+					success: function (response) {
+						console.log('Booking response:', response);
+						$('#bookingModal').modal('hide');
+						Promise.all([fetchClinicDays(), fetchAppointmentCounts()]).then(([days, counts]) => {
+							selectedDays = days;
+							var appointmentCounts = counts.reduce((acc, curr) => {
+								acc[curr.date] = curr.count;
+								return acc;
+							}, {});
+							updateCalendar(selectedDays, appointmentCounts);
+						});
+					},
+					error: function (xhr, status, error) {
+						console.error('Error booking appointment:', xhr, status, error);
+						alert('Failed to book appointment. Please try again.');
+					}
+				});
+			});
+		});
+	</script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// Fetch taken times when modal is shown
+			$('#appointmentTime').on('click', function () {
+				debugger
+				const selectedDate = $('#appointmentDate').val();
+				if (selectedDate) {
+					fetchTakenTimes(selectedDate);
+				}
+			});
+
+			function fetchTakenTimes(date) {
+				debugger
+				$.ajax({
+					url: '@Url.Action("GetTakenTimes", "AppointSchedule")',
+					type: 'GET',
+					data: { date: date },
+					success: function (data) {
+						markUnavailableTimes(data);
+					},
+					error: function () {
+						console.error('Error fetching taken times');
+					}
+				});
+			}
+
+			// Mark unavailable times
+			function markUnavailableTimes(takenTimes) {
+				debugger
+				const options = $('#appointmentTime option');
+				options.each(function () {
+					const timeVal = $(this).val();
+					if (takenTimes.includes(timeVal)) {
+						$(this).addClass('unavailable').removeClass('available');
+					} else {
+						$(this).removeClass('unavailable').addClass('available');
+					}
+				});
+			}
+		});
+	</script>
+
+	<style>
+		.unavailable {
+			background-color: red; /* Red background for unavailable options */
+			color: white; /* White text for better visibility */
+		}
+
+		.available {
+			background-color: white; /* Default background for available options */
+			color: black; /* Default text color */
+		}
+	</style>
+
+    <!-- Page Content -->
+    <main class="container section-padding">
+        <!-- Features Section -->
+
+
+		<section class="row mb-5">
+			<div class="col-lg-6" id="calendar"></div>
+
+			<div class="col-lg-6">
+				<div class="card shadow border-0">
+					<div class="card-body text-center">
+						<h4 class="card-title">Book Your Appointment Now</h4>
+						<p class="card-text">Schedule your appointment easily and securely. Choose a date and time that works for you!</p>
+						<a href="@Url.Action("Index","UserLogin")" class="btn btn-primary btn-lg mt-3">
+							Book now
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+
+
+		<!---------------------Modal Show Available time-------------------------------------------->
+
+		<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-md" role="document">
+				<div class="modal-content">
+					<div class="modal-header bg-primary text-white">
+						<h5 class="modal-title" id="bookingModalLabel">Appointment Schedules</h5>
+						<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+
+							<div class="form-group">
+								<label for="appointmentDate">Date</label>
+								<input id="appointmentDate" type="date" class="form-control" required>
+							</div>
+							<div class="form-group">
+								<label for="appointmentTime">Time</label>
+								<select id="appointmentTime" class="form-control" required>
+									<!-- Options will be populated by JavaScript -->
+								</select>
+							</div>
+					
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// Check if the user is authenticated (true/false)
+
+
+			document.getElementById("appointmentTime").addEventListener("change", function () {
+				var selectedTime = this.value;
+				var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
+				debugger
+
+				// If authenticated, redirect to the create appointment page
+				if (isAuthenticated ===true) {
+					window.location.href = '@Url.Action("CreateAppoint", "AppointSchedule")';
+				}
+				// If not authenticated, redirect to the login page
+				else {
+					window.location.href = '@Url.Action("Index", "UserLogin")';
+				}
+			});
+		</script>
+
+
+        <section id="home" class="row mb-5">
+            <div class="col-lg-6">
+                <img src="images/persian_cat_yawning-removebg-preview.png" class="img-fluid rounded" alt="Persian Cat">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="section-heading">Your Pet's Health,<span><br></span>Our Commitment</h2>
+                <p>Ensuring the health and happiness of your pets with our professional veterinary team.</p>
+            </div>
+        </section>
+        <!-- About Section -->
+        <section id="about" class="row mb-5">
+            <div class="col-lg-6">
+                <img src="images/urvan-removebg-preview.png" class="img-fluid rounded" alt="Urban Vet">
+            </div>
+            <div class="col-lg-6">
+                <p>Urban Vet Animal Clinic is a veterinary clinic located at Taysan, Batangas. The Clinic was established in 2019, owned by Dra. Janine Guerra and Dr. Dexter Guerra.</p>
+            </div>
+        </section>
+
+        <!-- Our Services Section -->
+        <section id="services" class="row mb-5">
+            <div class="col-lg-6">
+                <h2 class="section-heading">Our Veterinary Services</h2>
+                <ul>
+                    <li>Consultation</li>
+                    <li>Deworming</li>
+                    <li>Pet Grooming</li>
+                    <li>Vaccination</li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <div id="servicesCarousel" class="carousel slide" data-ride="carousel" data-interval="5000">
+                    <ol class="carousel-indicators">
+                        <li data-target="#servicesCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#servicesCarousel" data-slide-to="1"></li>
+                        <li data-target="#servicesCarousel" data-slide-to="2"></li>
+                        <li data-target="#servicesCarousel" data-slide-to="3"></li>
+                    </ol>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img class="d-block w-100 img-fluid rounded" src="images/consultationimage.jfif" alt="Consultation">
+                        </div>
+                        <div class="carousel-item">
+                            <img class="d-block w-100 img-fluid rounded" src="images/dewormingimage.jfif" alt="Deworming">
+                        </div>
+                        <div class="carousel-item">
+                            <img class="d-block w-100 img-fluid rounded" src="images/petgrooming.jfif" alt="Pet Grooming">
+                        </div>
+                        <div class="carousel-item">
+                            <img class="d-block w-100 img-fluid rounded" src="images/vaccinationimage.jfif" alt="Vaccination">
+                        </div>
+                    </div>
+                    <a class="carousel-control-prev" href="#servicesCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#servicesCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="row section-padding">
+            <div class="col-lg-12 text-center mb-4">
+                <h2>Visit Us</h2>
+            </div>
+            <div class="col-lg-6 d-flex align-items-center justify-content-center mb-4">
+                <img class="img-fluid rounded" src="images/urbanfront.png" alt="Contact Image">
+            </div>
+            <div class="col-lg-6">
+                <h2 class="section-heading">Our Contact Information</h2>
+                <ul class="contact-info">
+                    <li><i class="mdi mdi-map-marker mdi-icon"></i><strong> Address</strong><br>Dio Commercial Complex, Mabayabas, Taysan, Batangas</li>
+                    <li><i class="mdi mdi-clock mdi-icon"></i><strong> Clinic Hours</strong><br>Wednesday to Monday: 8:00 AM to 5:00 PM</li>
+                    <li><i class="mdi mdi-phone mdi-icon"></i><strong> Contact</strong><br>+63 915 057 8906 <br>info@urbanvet.com</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer text-dark py-4">
+        <div class="container">
+            <!-- Logo Section -->
+            <div class="row mb-4 justify-content-center">
+                <div class="col-12 text-center">
+                    <img src="images/urvan-removebg-preview.png" class="img-fluid" alt="Brand Logo" style="max-height: 100px;">
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="row mb-4">
+                <!-- Left Side -->
+                <div class="col-12 col-md-6 text-center text-md-left mb-3 mb-md-0">
+                    <h5 class="font-weight-bold">Contact Us</h5>
+                    <p class="mb-1">Email: <a href="mailto:urbanvet@gmail.com" class="text-dark">urbanvet@gmail.com</a></p>
+                    <p class="mb-0">Phone: <a href="tel:+631905708906" class="text-dark">+63 915 057 8906</a></p>
+                </div>
+                <!-- Right Side -->
+                <div class="col-12 col-md-6 text-center text-md-right">
+                    <h5 class="font-weight-bold">Visit Us</h5>
+                    <p class="mb-1">Dio Commercial Complex, Mabayabas</p>
+                    <p class="mb-0">Taysan, Batangas</p>
+                </div>
+            </div>
+
+            <!-- Copyright Section -->
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="m-0">&copy; 2024 Urban Vet Clinic. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const sections = document.querySelectorAll('section');
+
+            function setActiveNav() {
+                let index = sections.length;
+
+                while (--index && window.scrollY + window.innerHeight / 2 < sections[index].offsetTop) { }
+
+                navLinks.forEach((link) => link.classList.remove('active-nav'));
+                navLinks[index].classList.add('active-nav');
+            }
+
+            setActiveNav();
+            window.addEventListener('scroll', setActiveNav);
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    const offsetPosition = targetElement.offsetTop - window.innerHeight / 2 + targetElement.offsetHeight / 2;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    navLinks.forEach(link => link.classList.remove('active-nav'));
+                    this.classList.add('active-nav');
+                });
+            });
+        });
+    </script>
+
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+</body>
+</html>

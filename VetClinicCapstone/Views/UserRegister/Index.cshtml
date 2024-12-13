@@ -1,0 +1,326 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="~/images/urvan-removebg-preview.png">
+
+    <title>Urban Vet Animal Clinic - Sign up</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JavaScript Bundle with Popper -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+    </style>
+
+</head>
+    @using VetClinicCapstone.Models.ViewModel;
+        @model UserAndOwnerViewModel
+<body>
+    <nav class="navbar navbar-expand-lg navbar-white bg-white">
+        <a class="navbar-brand" href="#">
+            <h3>
+                <span style="font-family: 'Times New Roman', serif;" class="text-danger">Urban </span>
+                <span style="font-family: 'Times New Roman', serif;" class="text-primary">Vet</span>
+                <span style="font-family: 'Times New Roman', serif;" class="text-dark">Animal Clinic</span>
+            </h3>
+        </a>
+
+    </nav>
+    <section class="vh-100">
+        <div class="container py-5 h-100">
+
+            <div class="row d-flex align-items-center justify-content-center h-100">
+                <div class="col-md-8 col-lg-5 ">
+                    <img src="https://i.pinimg.com/564x/59/3c/5e/593c5e37e35c26ee3a82d528be5e5182.jpg"
+                         class="img-fluid" alt="Phone image">
+                </div>
+                <div class="col-lg-7">
+                    @if (TempData["EmailAlreadyUse"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["EmailAlreadyUse"]
+                        </div>
+                    }
+                    <div id="validation-alert" class="alert alert-danger d-none">
+                        Please fill out all required fields correctly.
+                    </div>
+                    <div id="doesnotmatchpass" class="alert alert-danger d-none">
+                        Passwords do not match.
+                    </div>
+                    <form asp-action="Register" novalidate class="needs-validation" method="post">
+                        <div class="row">
+                            <!-- First, Middle, Last, Suffix -->
+                            <div class="col-md-3">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Firstname" type="text" id="firstname" class="form-control" required />
+                                    <label class="form-label" for="firstname">Firstname <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a firstname.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Midname" type="text" id="midname" class="form-control" />
+                                    <label class="form-label" for="midname">Middle name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Lastname" type="text" id="lastname" class="form-control" required />
+                                    <label class="form-label" for="lastname">Lastname <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a lastname.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.SuffixName" type="text" id="suffixname" class="form-control" />
+                                    <label class="form-label" for="suffixname">Suffix</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Sex, Phone number -->
+                            <div class="col-md-6">
+                                <div class="mb-4">
+                                    <select asp-for="OwnerDetail.Sex" class="form-select" aria-label="Select sex" required>
+                                        <option value="" disabled selected>Select sex <span class="text-danger">*</span></option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select your sex.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Phone" type="text" id="phone" maxlength="13" class="form-control" required />
+                                    <label class="form-label" for="phone">Phone <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a phone number.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Province, City -->
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Province" type="text" id="province" class="form-control" required />
+                                    <label class="form-label" for="province">Province <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a province.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.City" type="text" id="city" class="form-control" required />
+                                    <label class="form-label" for="city">City <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a city.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Barangay, Street -->
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Baranggay" type="text" id="barangay" class="form-control" required />
+                                    <label class="form-label" for="barangay">Barangay <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a barangay.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Street" type="text" id="street" class="form-control" required />
+                                    <label class="form-label" for="street">Street <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a street.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Email -->
+                            <div class="col-md-12">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="OwnerDetail.Email" type="email" id="email" class="form-control" required />
+                                    <label class="form-label" for="email">Email address <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a valid email address.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Password Field -->
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="UserDetail.Password" type="password" id="password" class="form-control" required minlength="7" />
+                                    <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Provide a password (at least 7 characters).
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="col-md-6">
+                                <div class="form-outline mb-4">
+                                    <input asp-for="UserDetail.ConfirmPassword" type="password" id="confirmPassword" class="form-control" required />
+                                    <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback">
+                                        Please confirm your password.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Length Alert -->
+                        <div id="passwordLengthAlert" class="alert alert-danger d-none" role="alert">
+                            Password must be greater than 6 characters.
+                        </div>
+
+                        <!-- Password Mismatch Alert -->
+                        <div id="doesnotmatchpass" class="alert alert-danger d-none" role="alert">
+                            Passwords do not match.
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg btn-block mt-3">Register</button>
+                        <p class="mb-5 pb-lg-2 mt-2">Already have an account? <a href="@Url.Action("Index", "UserLogin")">Log in here</a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- MDB CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.0/mdb.min.css" rel="stylesheet">
+
+    <!-- MDB JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.0/mdb.min.js"></script>
+
+    <script>
+        function toTitleCase(text) {
+            return text.replace(/\w\S*/g, function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+        }
+
+        const inputFields = ["firstname", "midname", "lastname", "suffixname", "province","barangay","city","street",];
+
+
+        inputFields.forEach(function (fieldId) {
+            document.getElementById(fieldId).addEventListener("blur", function () {
+                this.value = toTitleCase(this.value);
+            });
+        });
+    </script>
+    <script>
+        // Function to format phone number dynamically
+        function formatPhoneNumber() {
+            let phoneNumberInput = document.getElementById('phone');
+            let phoneNumber = phoneNumberInput.value.replace(/\D/g, ''); // Remove non-numeric characters
+            let formattedPhoneNumber = '';
+
+            // Check if the phone number starts with 0 or 63
+            if (phoneNumber.startsWith('0')) {
+                formattedPhoneNumber = phoneNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3'); // Format as 0XXX-XXX-XXXX else {
+            }
+
+            // Update the input value with the formatted phone number
+            phoneNumberInput.value = formattedPhoneNumber;
+        }
+
+        // Attach event listener to input field to format phone number dynamically
+        document.getElementById('phone').addEventListener('input', formatPhoneNumber);
+    </script>
+@*     <script>
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            var validationAlert = document.getElementById('validation-alert')
+
+
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+
+                           
+                            validationAlert.classList.remove('d-none')
+                        } else {
+
+                            validationAlert.classList.add('d-none')
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script> *@
+
+    <script>
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            var validationAlert = document.getElementById('doesnotmatchpass');
+
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    var password = document.getElementById('password').value;
+                    var confirmPassword = document.getElementById('confirmPassword').value;
+
+                    // Check if the form is valid
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        validationAlert.classList.add('d-none'); // Hide alert for other validations
+                    }
+                    // Check if passwords match
+                    else if (password !== confirmPassword) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        validationAlert.classList.remove('d-none'); // Show alert if passwords don't match
+                    }
+                    else {
+                        validationAlert.classList.add('d-none'); // Hide alert if everything is valid
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
+
+</body>
+</html>

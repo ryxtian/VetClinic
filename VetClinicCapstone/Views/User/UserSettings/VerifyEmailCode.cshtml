@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Verify Email Code";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">Email Verification</h3>
+                <p class="text-center">Please enter the verification code sent to your email.</p>
+
+                @if (TempData["TokenInvalid"] != null)
+                {
+                    <div class="alert alert-danger text-center">
+                        @TempData["TokenInvalid"]
+                    </div>
+                }
+
+                <form asp-action="VerifyEmailCode" method="post">
+                    <div class="form-group">
+                        <label for="verificationCode">Verification Code</label>
+                        <input type="text" name="verificationCode" class="form-control" id="verificationCode" required>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Verify</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

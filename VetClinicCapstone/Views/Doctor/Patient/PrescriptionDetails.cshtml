@@ -1,0 +1,137 @@
+﻿@* @{
+	ViewData["Title"] = "PrescriptionDetails";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using VetClinicCapstone.Models;
+@model IEnumerable<PrescriptionDetailTbl>
+<link href="~/css/site.css" rel="stylesheet" />
+<div class="container-full">
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-12">
+
+                <div class="box">
+                    <div class="box-header with-border">
+                        <img src="~/images/urvan-removebg-preview.png" alt="Logo" class="logo w-120" />
+                        <img src="~/images/rx_symbol_border.svg-removebg-preview.png" class="rx-symbol w-120 pull-right" />
+                        <h4 class="box-title text-center">Prescription</h4>
+                    </div>
+                    <hr />
+                    <!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Dosage</th>
+                                        <th>Frequency</th>
+                                        <th>Instruction</th>
+                                        <th>Option</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var list in Model)
+                                    {
+                                        <tr>
+                                            <td>@list.Medicine</td>
+                                            <td>@list.Dosage</td>
+                                            <td>@list.Frequency</td>
+                                            <td>@list.Instruction</td>
+                                            <td>Delete</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+                <a href="#" class="no-print btn btn-warning btn-sm float-right mt-2" onclick="window.print()">Print Prescription</a>
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
+</div> *@
+
+
+@{
+    ViewData["Title"] = "PrescriptionDetails";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using VetClinicCapstone.Models.ViewModel
+@model PrescriptionWithDoctorViewModel
+
+<link href="~/css/site.css" rel="stylesheet" />
+
+<div class="container-full">
+    <section class="content">
+        <div class="box">
+            <div class="box-body">
+                <div class="prescription">
+                    <div class="header">
+                        <div class="logo-container">
+                            <img src="~/images/urvan-removebg-preview.png" class="logo" alt="Urban Vet Logo">
+                        </div>
+                        <div class="date">
+                            <label>Date:</label>
+                            <span>@DateTime.Now.ToShortDateString()</span>
+                        </div>
+                    </div>
+
+                    <div class="patient-info">
+                        <label>For:</label>
+                        <span>@Model.PatientTbls.PatientName</span>
+                        <div class="species">
+                            <label>Species:</label>
+                            <!-- Display species based on the patient data -->
+                            <input type="checkbox" id="canine" @(Model.PatientTbls.Species.Contains("Canine") ? "checked" : "") disabled>
+                            <label for="canine">Canine</label>
+                            <input type="checkbox" id="feline" @(Model.PatientTbls.Species.Contains("Feline") ? "checked" : "") disabled>
+                            <label for="feline">Feline</label>
+                            <input type="checkbox" id="exotic" @(Model.PatientTbls.Species.Contains("Exotic") ? "checked" : "") disabled>
+                            <label for="exotic">Exotic</label>
+                            <input type="checkbox" id="others" @(Model.PatientTbls.Species.Contains("Others") ? "checked" : "") disabled>
+                            <label for="others">Other Species</label>
+                        </div>
+                    </div>
+
+                    <div class="prescription-details">
+                        <div class="rx-symbol">℞</div>
+                        @foreach (var detail in Model.PrescriptionDetailTbls)
+                        {
+                            <div class="detail">
+                                <p>@detail.Medicine <span>@detail.Dosage</span> #40</p>
+                                <p>SIG: @detail.Frequency @detail.Instruction</p>
+                            </div>
+                            <hr />
+                        }
+                    </div>
+
+                    <div class="footer">
+                        <div class="signature">
+                            <p><span>@Model.AdminInfoTbls.Firstname @Model.AdminInfoTbls.Lastname, DVM</span></p>
+                            <p>Lic. No. <span>1231521</span></p>
+                            <p>PTR No.<span>123412</span></p>
+                        </div>
+                        <p class="watermark">PAPI</p>
+                        <div class="clinic-info">
+                            <h2><span style="color:red">Urban</span> <span style="color:blue">Vet</span></h2>
+                            <p>Happy pets, Happy vets!</p>
+                            <p>Farma Corporation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Button -->
+                <button onclick="window.print();" class="print-button">Print Prescription</button>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+
+ 

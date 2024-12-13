@@ -1,0 +1,235 @@
+﻿ @{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+ @using VetClinicCapstone.Models;
+ @model IEnumerable<ServiceTbl>
+
+<div class="container-full">
+	<div class="content-header">
+		<div class="d-flex align-items-center">
+			<div class="mr-auto">
+				<h4 class="page-title">Service List</h4>
+			</div>
+
+		</div>
+	</div>
+
+	<section class="content">
+		<div class="col-12">
+			<div class="box">
+				<div class="box-body">
+					<h4 class="box-title">Services</h4>
+					<button class="btn btn-success pull-right mb-15 text-dark" data-toggle="modal" data-target=".AddserviceModal">Add New Service</button>
+					<div class="table-responsive">
+						<div id="example1_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4">
+							<table id="example1" class="table-striped table-hover table table-bordered table-striped dataTable" role="grid" aria-describedby="example1_info">
+								<thead>
+									<tr>
+
+										<th class="bb-2">Service</th>
+
+										<th class="bb-2">Status</th>
+										<th class="bb-2">Action</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach(var list in Model)
+									{
+										<tr>
+											<td>@list.ServiceName</td>
+
+											@if(list.IsDeleted == 1)
+											{
+												<td><span class="badge badge-danger-light badge-lg">Not available</span></td>
+											}
+											else
+											{
+												<td><span class="badge badge-success-light badge-lg">Available</span></td>
+											}
+
+											<td>
+												<a asp-action="ActiveService" asp-controller="Services" asp-route-id="@list.Service_ID" class="btn-success btn-sm">Active</a>
+												<a class="btn btn-primary btn-sm" onclick="openEditModal(this)" data-servicename="@list.ServiceName" data-price="@list.ServicePrice" data-serviceId="@list.Service_ID">Edit</a>
+												
+												<a asp-action="DeleteService" asp-controller="Services" asp-route-id="@list.Service_ID" class="btn-danger btn-sm">Remove</a>
+
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<!-- /.box-body -->
+			</div>
+		</div>
+	</section>
+
+</div>
+
+
+<div class="modal fade AddserviceModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="box-title text-info"><i class="ti-user mr-15"></i> Add New Service</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			</div>
+			<div class="modal-body">
+				<form method="post" id="AddServiceForm" class="needs-validation" novalidate>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="Servicename">Service Name</label>
+								<input name="ServiceName"type="text" id="Servicename" class="form-control" required placeholder="Service Name">
+								<div class="invalid-feedback">
+									This field is required!
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="Price">Price</label>
+								<input name="ServicePrice" type="text" id="Price" class="form-control" required placeholder="Price">
+								<div class="invalid-feedback">
+									This field is required!
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="box-footer text-right">
+				<button data-dismiss="modal" type="button" class="btn btn-rounded btn-danger btn-outline mr-1">
+					<i class="mdi mdi-close"></i> Close
+				</button>
+				<button id="buttonsave" type="button" class="btn btn-rounded btn-primary btn-outline">
+					<i class="ti-save-alt"></i> Save
+				</button>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+
+
+
+<!-- Edit Service Modal -->
+<div class="modal fade" id="editServiceModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" style="display: none;">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="box-title text-info"><i class="ti-user mr-15"></i> Edit Service</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			</div>
+			<div class="modal-body">
+				<form id="editServiceForm">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<input name="Service_ID" type="hidden" id="serviceId" class="form-control" placeholder="Service ID">
+
+								<label for="serviceName">Service Name</label>
+								<input name="ServiceName" requiredtype="text" class="form-control" id="serviceName" placeholder="Enter Service Name">
+								<div class="invalid-feedback">
+									This field is required!
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="servicePrice">Price</label>
+								<input name="ServicePrice" type="number" required class="form-control" id="servicePrice" placeholder="Enter Price">
+								<div class="invalid-feedback">
+									This field is required!
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="box-footer text-right">
+				<button data-dismiss="modal" type="button" class="btn btn-rounded btn-danger btn-outline mr-1">
+					<i class="mdi mdi-close"></i> Close
+				</button>
+				<button id="saveChangesButton" type="button" class="btn btn-rounded btn-primary btn-outline">
+					<i class="ti-save-alt"></i> Save
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="~/js/helper.js"></script>
+<script>
+	$(document).ready(function () {
+		$('#buttonsave').click(function (event) {
+			var form = $('#AddServiceForm')[0]; // Get the form element
+
+			// Prevent default behavior and stop propagation if form is invalid
+			if (!form.checkValidity()) {
+				event.preventDefault();
+				event.stopPropagation();
+			} else {
+				// If the form is valid, proceed with SavingFunction
+				SavingFunction({
+					url: "@Url.Action("AddServices", "Services")",
+					form: "#AddServiceForm",
+					title: "Are you sure?",
+					message: "Do you want to save this record",
+					redirection: "@Url.Action("Index", "Services")"
+				});
+			}
+
+			// Trigger Bootstrap form validation styles
+			form.classList.add('was-validated');
+		});
+	});
+</script>
+
+<script>
+	$(document).ready(function () {
+		$('#saveChangesButton').click(function (event) {
+			var form = $('#editServiceForm')[0]; // Get the form element
+
+			// Prevent default behavior and stop propagation if form is invalid
+			if (!form.checkValidity()) {
+				event.preventDefault();
+				event.stopPropagation();
+			} else {
+				// If the form is valid, proceed with SavingFunction
+				SavingFunction({
+					url: "@Url.Action("UpdateService", "Services")",
+					form: "#editServiceForm",
+					title: "Are you sure?",
+					message: "Do you want to update this record",
+					redirection: "@Url.Action("Index", "Services")"
+				});
+			}
+
+			// Trigger Bootstrap form validation styles
+			form.classList.add('was-validated');
+		});
+	});
+</script>
+
+<script>
+	function openEditModal(button) {
+		// Retrieve the data from the button's data attributes
+		const serviceId = button.getAttribute('data-serviceId');
+		const serviceName = button.getAttribute('data-servicename');
+		const price = button.getAttribute('data-price');
+
+		// Set the values in the modal's input fields
+		document.getElementById('serviceId').value = serviceId;
+		document.getElementById('serviceName').value = serviceName;
+		document.getElementById('servicePrice').value = price;
+
+		// Show the modal
+		$('#editServiceModal').modal('show');
+	}
+</script>

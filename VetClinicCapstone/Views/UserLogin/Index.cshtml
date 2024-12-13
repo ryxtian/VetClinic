@@ -1,0 +1,102 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+    <link rel="icon" href="~/images/urvan-removebg-preview.png">
+
+    <title>Urban Vet Animal Clinic - Log in </title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JavaScript Bundle with Popper -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<style>
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+
+
+</style>
+
+</head>
+    @using VetClinicCapstone.Models.ViewModel;
+        @model UserAndOwnerViewModel
+<body>
+    <nav class="navbar navbar-expand-lg navbar-white bg-white">
+        <a class="navbar-brand" href="#">
+            <h3>
+                <span style="font-family: 'Times New Roman', serif;" class="text-danger">Urban </span>
+                <span style="font-family: 'Times New Roman', serif;" class="text-primary">Vet</span>
+                <span style="font-family: 'Times New Roman', serif;" class="text-dark">Animal Clinic</span>
+            </h3>
+        </a>
+       
+    </nav>
+    <section class="vh-100">
+        <div class="container py-5 h-100">
+
+            <div class="row d-flex align-items-center justify-content-center h-100">
+                <div class="col-md-8 col-lg-7 col-xl-6">
+                    <img src="https://i.pinimg.com/564x/3a/7c/88/3a7c8820307fb9290a4e1f9c237ad46c.jpg"
+                         class="img-fluid" alt="Phone image">
+                </div>
+                <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+                    @if (TempData["InvalidLogin"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["InvalidLogin"]
+                        </div>
+                    }
+                    <form asp-action="Login" method="post">
+                        <!-- Email input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input asp-for="OwnerDetail.Email" type="email" id="form1Example13" class="form-control form-control-lg" />
+                            <label class="form-label" for="form1Example13">Email address</label>
+                        </div>
+
+                        <!-- Password input -->
+                        <div data-mdb-input-init class="form-outline mb-4">
+                            <input asp-for="UserDetail.Password" type="password" id="form1Example23" class="form-control form-control-lg" />
+                            <label class="form-label" for="form1Example23">Password</label>
+                        </div>
+
+                        <div class="d-flex justify-content-around align-items-center mb-4">
+                            <!-- Checkbox -->
+                            <div class="form-check d-none">
+                                <input  class="form-check-input" type="checkbox" value="" id="form1Example3" checked />
+                                <label class="form-check-label" for="form1Example3"> Remember me </label>
+                            </div>
+                            <a href="@Url.Action("Index","ForgotPassword")">Forgot password?</a>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg btn-block">Login</button>
+                        <p class="mb-5 pb-lg-2 mt-2">Don't have an account? <a href="@Url.Action("Index","UserRegistration")">Register here</a></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- MDB CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.0/mdb.min.css" rel="stylesheet">
+
+    <!-- MDB JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.0.0/mdb.min.js"></script>
+
+</body>
+</html>

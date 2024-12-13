@@ -1,0 +1,591 @@
+﻿@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using VetClinicCapstone.Models.ViewModel;
+@model IEnumerable<AdminAndAdminInfoViewModel>
+
+
+    <style>
+    .avatar-img {
+        width: 375px;
+        height: 200px;
+        object-fit: cover; /* Ensures the image covers the area without distortion */
+    }
+    </style>
+<div class="container-full">
+    <div class="content-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="page-title mb-0">Staff Account</h4>
+            <a href="#" class="btn btn-primary btn-icon" data-toggle="modal" data-target="#addModal">
+                <i class="mdi mdi-plus"></i> Add Staff/Doctor
+            </a>
+
+        </div>
+    </div>
+    <!-- Modal Structure -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">Add New</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Form or content for the modal goes here -->
+                    <form id="addRole">
+                        <h4>Profile</h4>
+                        <div class="row">
+                            <!-- Column 1 -->
+                           <div class="col-lg-3">
+                                <div class="mb-3">
+                                    <label for="addfirstname" class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminInfoTbls.Firstname" class="form-control" id="addfirstname" required placeholder="Firstname">
+                                    <div class="invalid-feedback">
+                                        Firstname required!
+                                    </div>
+                                </div>
+                           </div>
+
+                            <div class="col-lg-3">
+                                <div class="mb-3">
+                                    <label for="addmiddlename" class="form-label">Middle Name</label>
+                                    <input type="text" name="AdminInfoTbls.Middlename" class="form-control" id="addmiddlename" placeholder="Middlename">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <div class="mb-3">
+                                    <label for="addlastname" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminInfoTbls.Lastname" class="form-control" id="addlastname" required placeholder="Lastname">
+                                    <div class="invalid-feedback">
+                                        Lastname required!
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="mb-3">
+                                    <label for="addsuffixname" class="form-label">Suffix Name</label>
+                                    <input type="text" name="AdminInfoTbls.SuffixName" class="form-control" id="addsuffixname" placeholder="Suffix Name">
+                                </div>
+                            </div>
+                        </div>
+
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label for="staffPhone" class="form-label">Phone Number</label>
+                                    <input type="text" name="AdminInfoTbls.Phone" class="form-control" id="staffPhone" required placeholder="Phone" maxlength="13">
+                                    <div class="invalid-feedback">
+                                        Phone required!
+                                    </div>
+                                </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label for="staffSex" class="form-label">Sex <span class="text-danger">*</span></label>
+                                    <select name="AdminInfoTbls.Sex" class="form-control" required id="staffSex">
+                                        <option value="" disabled selected>Select sex</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Sex required!
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+
+
+                        <div class="row">
+                            <!-- Column 2 -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="addstreet" class="form-label">Street No. <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminInfoTbls.Street" class="form-control" id="addstreet" required placeholder="House No. Street name">
+                                    <div class="invalid-feedback">
+                                        Street required!
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="addbarangay" class="form-label">Barangay <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminInfoTbls.Barangay" class="form-control" id="addbarangay" required placeholder="Barangay">
+                                    <div class="invalid-feedback">
+                                        Barangay required!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=row>
+                                <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="addcity" class="form-label">City <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminInfoTbls.City" class="form-control" id="addcity" required placeholder="City">
+                                    <div class="invalid-feedback">
+                                        City required!
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="addprovince" class="form-label">Province <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminInfoTbls.Province" class="form-control" id="addprovince" required placeholder="Province">
+                                    <div class="invalid-feedback">
+                                        Province required!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                        <div class="col-md-6">
+                                <div class="mb-3">
+                            <label for="staffRole" class="form-label">Role <span class="text-danger">*</span></label>
+                                    <select name="AdminInfoTbls.Role" class="form-control" required id="staffRole">
+                                        <option value="" disabled selected>Select role</option>
+                                        <option value="Doctor">Doctor</option>
+                                        <option value="Staff">Staff</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Role required!
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="staffBirthday" class="form-label">Birthday <span class="text-danger">*</span></label>
+                                    <input type="date" name="AdminInfoTbls.Birthday" class="form-control" id="staffBirthday" required placeholder="Birthday">
+                                <div class="invalid-feedback">
+                                        Birthday required!
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                          
+                        <hr/>
+                        <h4>Account Detail</h4>
+                  
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="staffUsername" class="form-label">Username <span class="text-danger">*</span></label>
+                                    <input type="text" name="AdminTbls.Username" class="form-control" id="staffUsername" required placeholder="Username">
+                                    <div class="invalid-feedback">
+                                        Username required!
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="staffPassword" class="form-label">Password <span class="text-danger">*</span></label>
+                                    <input type="password" name="AdminTbls.Password" class="form-control" id="staffPassword" required placeholder="Password">
+                                    <div class="invalid-feedback">
+                                        Password required!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" id="saveRole" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Get today's date in the format YYYY-MM-DD
+        var today = new Date().toISOString().split('T')[0];
+
+        // Set the max attribute of the date input to today's date
+        document.getElementById('staffBirthday').setAttribute('max', today);
+    </script>
+    <section class="content">
+        <div class="row">
+            @foreach (var list in Model)
+            {
+
+                <div class="col-12 col-lg-4">
+
+                    <div class="box ribbon-box">
+                        <div class="box-header no-border p-0">
+                            <a href="#">
+                                <img class="img-fluid avatar-img" src="~/images/avatar/@(list.AdminInfoTbls.Sex == "Male" ? "avatar-1.png" : "avatar-10.png")" alt="@list.AdminInfoTbls.Sex Avatar">
+                            </a>
+                        </div>
+                        <div class="box-body">
+                            <div class="text-center">
+                                <h3 class="my-10"><a href="#">@list.AdminInfoTbls.Firstname @list.AdminInfoTbls.Lastname</a></h3>
+                                <h6 class="user-info mt-0 mb-10 text-fade">@list.AdminInfoTbls.Role</h6>
+                                <p class="text-fade w-p85 mx-auto">@list.AdminInfoTbls.Phone</p>
+                                <p class="text-fade w-p85 mx-auto">@list.AdminInfoTbls.Street @list.AdminInfoTbls.Barangay @list.AdminInfoTbls.City @list.AdminInfoTbls.Province</p>
+                            </div>
+                            <!-- Buttons added here -->
+                            <div class="text-center mt-4">
+                                <button class="btn btn-success btn-icon edit-btn"
+                                        data-id="@list.AdminInfoTbls.AdminInfo_ID"
+                                        data-firstname="@list.AdminInfoTbls.Firstname"
+                                        data-middlename="@list.AdminInfoTbls.Middlename"
+                                        data-lastname="@list.AdminInfoTbls.Lastname"
+                                        data-role="@list.AdminInfoTbls.Role"
+                                        data-phone="@list.AdminInfoTbls.Phone"
+                                        data-street="@list.AdminInfoTbls.Street"
+                                        data-barangay="@list.AdminInfoTbls.Barangay"
+                                        data-city="@list.AdminInfoTbls.City"
+                                        data-province="@list.AdminInfoTbls.Province"
+                                        data-sex="@list.AdminInfoTbls.Sex">
+                                    <i class="mdi mdi-pencil"></i> Edit
+                                </button>
+                                <a href="#" class="btn btn-danger btn-icon ml-2" data-id="@list.AdminTbls.Admin_ID" onclick="confirmDeletion(event, @list.AdminTbls.Admin_ID)">
+                                    <i class="mdi mdi-delete"></i> Remove
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editAdminModal" tabindex="-1" role="dialog" aria-labelledby="editAdminModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editAdminModalLabel">Edit Admin Information</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editAdminForm">
+                                    <input type="hidden" id="editAdminId" name="AdminInfo_ID">
+
+                                    <div class="row">
+                                        <!-- First Name and Middle Name -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editFirstname">First Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editFirstname" name="Firstname" required>
+                                                <div class="invalid-feedback">
+                                                    First name required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editMiddlename">Middle Name</label>
+                                                <input type="text" class="form-control" id="editMiddlename" name="Middlename">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Last Name and Role -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editLastname">Last Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editLastname" name="Lastname" required>
+                                                <div class="invalid-feedback">
+                                                    Last name required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editRole">Role <span class="text-danger">*</span></label>
+                                                <select type="text" class="form-control" id="editRole" name="Role" required>
+                                                    <option value="" disabled selected>Select role</option>
+                                                    <option value="Doctor">Doctor</option>
+                                                    <option value="Staff">Staff</option>
+                                            </select>
+                                                <div class="invalid-feedback">
+                                                    Role required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Phone and Street -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editPhone">Phone <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editPhone" name="Phone" required maxlength="13">
+                                                <div class="invalid-feedback">
+                                                    Phone required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editStreet">Street <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editStreet" name="Street" required>
+                                                <div class="invalid-feedback">
+                                                    Street required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Barangay and City -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editBarangay">Barangay <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editBarangay" name="Barangay" required>
+                                                <div class="invalid-feedback">
+                                                    Barangay required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editCity">City <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editCity" name="City" required>
+                                                <div class="invalid-feedback">
+                                                    City required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <!-- Province and Sex -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editProvince">Province <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="editProvince" name="Province" required>
+                                                <div class="invalid-feedback">
+                                                    Province required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="editSex">Sex <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="editSex" name="Sex" required>
+                                                    <option value="" disabled selected>Select Sex</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Sex required!
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" id="saveAdminChanges">Save changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+       
+                
+
+                <script>
+                    $(document).ready(function () {
+                        $('.edit-btn').on('click', function () {
+                            var adminId = $(this).data('id');
+                            var firstname = $(this).data('firstname');
+                            var middlename = $(this).data('middlename');
+                            var lastname = $(this).data('lastname');
+                            var role = $(this).data('role');
+                            var phone = $(this).data('phone');
+                            var street = $(this).data('street');
+                            var barangay = $(this).data('barangay');
+                            var city = $(this).data('city');
+                            var province = $(this).data('province');
+                            var sex = $(this).data('sex');
+                            
+
+                            $('#editAdminId').val(adminId);
+                            $('#editFirstname').val(firstname);
+                            $('#editMiddlename').val(middlename);
+                            $('#editLastname').val(lastname);
+                            $('#editRole').val(role);
+                            $('#editPhone').val(phone);
+                            $('#editStreet').val(street);
+                            $('#editBarangay').val(barangay);
+                            $('#editCity').val(city);
+                            $('#editProvince').val(province);
+                            $('#editSex').val(sex);
+
+                            $('#editAdminModal').modal('show');
+                        });
+                    });
+                </script>
+
+                <script src="~/js/helper.js"></script>
+                <script>
+                    $(document).ready(function () {
+                        $('#saveAdminChanges').click(function (event) {
+                            debugger
+                            var form = $('#editAdminForm')[0]; // Get the form element
+
+                            // Prevent default behavior and stop propagation if form is invalid
+                            if (!form.checkValidity()) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            } else {
+                                // If the form is valid, proceed with SavingFunction
+                                SavingFunction({
+                                    url: "@Url.Action("UpdateAdmin", "StaffAccount")",
+                                    form: "#editAdminForm",
+                                    title: "Are you sure?",
+                                    message: "Do you want to save this record",
+                                    redirection: "@Url.Action("Index", "StaffAccount")"
+                                });
+                            }
+
+                            // Trigger Bootstrap form validation styles
+                            form.classList.add('was-validated');
+                        });
+                    });
+                </script>
+
+                <script>
+                    function confirmDeletion(event, id) {
+                        event.preventDefault();
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: 'You will not be able to recover this admin!',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, remove it!',
+                            cancelButtonText: 'No, cancel!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: '@Url.Action("RemoveAdmin", "StaffAccount")',
+                                    method: 'POST',
+                                    data: { id: id },
+                                    success: function (response) {
+                                        if (response.success) {
+                                            Swal.fire(
+                                                'Removed!',
+                                                response.message,
+                                                'success'
+                                            ).then(() => {
+                                                // Optionally refresh the page or remove the row from the table
+                                                location.reload(); // Refreshes the page
+                                            });
+                                        } else {
+                                            Swal.fire(
+                                                'Error!',
+                                                response.message,
+                                                'error'
+                                            );
+                                        }
+                                    },
+                                    error: function (error) {
+                                        console.error(error);
+                                        Swal.fire(
+                                            'Error!',
+                                            'An error occurred while removing the admin.',
+                                            'error'
+                                        );
+                                    }
+                                });
+                            }
+                        });
+                    }
+                </script>
+                <script>
+                    $(document).ready(function () {
+                        $('#saveRole').click(function (event) {
+                            var form = $('#addRole')[0]; // Get the form element
+
+                            // Prevent default behavior and stop propagation if form is invalid
+                            if (!form.checkValidity()) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            } else {
+                                // If the form is valid, proceed with SavingFunction
+                                SavingFunction({
+                                    url: "@Url.Action("CreateAdmin", "StaffAccount")",
+                                    form: "#addRole",
+                                    title: "Are you sure?",
+                                    message: "Do you want to save this record",
+                                    redirection: "@Url.Action("Index", "StaffAccount")"
+                                });
+                            }
+
+                            // Trigger Bootstrap form validation styles
+                            form.classList.add('was-validated');
+                        });
+                    });
+                </script>
+                <script>
+                    // Function to format phone number dynamically
+                    function formatPhoneNumber() {
+                        let phoneNumberInput = document.getElementById('editPhone');
+                        let phoneNumber = phoneNumberInput.value.replace(/\D/g, ''); // Remove non-numeric characters
+                        let formattedPhoneNumber = '';
+
+
+                        if (phoneNumber.startsWith('0')) {
+                            formattedPhoneNumber = phoneNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3'); // Format as 0XXX-XXX-XXXX else {
+                        }
+
+                        phoneNumberInput.value = formattedPhoneNumber;
+                    }
+
+                    document.getElementById('editPhone').addEventListener('input', formatPhoneNumber);
+                </script>
+                <script>
+                    // Function to format phone number dynamically
+                    function formatPhoneNumber() {
+                        let phoneNumberInput = document.getElementById('staffPhone');
+                        let phoneNumber = phoneNumberInput.value.replace(/\D/g, ''); // Remove non-numeric characters
+                        let formattedPhoneNumber = '';
+
+
+                        if (phoneNumber.startsWith('0')) {
+                            formattedPhoneNumber = phoneNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3'); // Format as 0XXX-XXX-XXXX else {
+                        }
+
+                        phoneNumberInput.value = formattedPhoneNumber;
+                    }
+
+                    document.getElementById('staffPhone').addEventListener('input', formatPhoneNumber);
+                </script>
+
+                <script>
+                    function toTitleCase(text) {
+                        return text.replace(/\w\S*/g, function (txt) {
+                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                        });
+                    }
+
+                    const inputFields = ["addfirstname", "addmiddlename", "addlastname", "addsuffixname", "addprovince", "addbarangay", "addcity", "addstreet",];
+
+
+                    inputFields.forEach(function (fieldId) {
+                        document.getElementById(fieldId).addEventListener("blur", function () {
+                            this.value = toTitleCase(this.value);
+                        });
+                    });
+                </script>
+            }
+        </div>
+    </section>
+</div>
+
+

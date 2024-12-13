@@ -1,0 +1,149 @@
+﻿@{
+	ViewData["Title"] = "View";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using VetClinicCapstone.Models.ViewModel;
+@model IEnumerable<JoinAppointPatientOwner>
+
+<div class="container-full">
+	<div class="content-header">
+		<div class="d-flex align-items-center">
+			<div class="mr-auto">
+				<h4 class="page-title">Appointment</h4>
+			</div>
+
+		</div>
+	</div>
+
+
+	<section class="content">
+		<div class="col-12">
+			<div class="box">
+				<div class="box-body">
+					<h4 class="box-title">Appointment For Approval List</h4>
+					<div class="table-responsive">
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th class="bb-2">Owner Name</th>
+									<th class="bb-2">Pet Name</th>
+									<th class="bb-2">Service</th>
+									<th class="bb-2">Date</th>
+									<th class="bb-2">Time</th>
+									<th class="bb-2">Owner Contact</th>
+									<th class="bb-2">Owner Email</th>
+										@if (User.IsInRole("Staff"))
+											{
+									<th class="bb-2">Action</th>
+											}
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model)
+								{
+									<tr>
+										<td>@item.OwnerTbls.Firstname @item.OwnerTbls.Lastname</td>
+										<td>@item.PatientTbls.PatientName</td>
+										<td>@item.ServiceTbls.ServiceName</td>
+										<td>@item.AppointmentTbls.Date.ToString("MMMM dd, yyyy")</td>
+										<td>@item.AppointmentTbls.Time</td>
+										<td>@item.OwnerTbls.Phone</td>
+										<td>@item.OwnerTbls.Email</td>
+									
+											@if (User.IsInRole("Staff"))
+											{
+											<td>
+																							<form asp-action="SendApprovalEmail" method="post" style="display:inline;" data-toggle="tooltip" title="" data-original-title="Approve">
+												<input type="hidden" name="ID" value="@item.AppointmentTbls.Appointment_ID" />
+												<input type="hidden" name="email" value="@item.OwnerTbls.Email" />
+												<button type="submit" class=" waves-effect waves-light btn btn-success-light btn-circle mx-5"><span class="mdi mdi-check"><span class="path1"></span><span class="path2"></span></span></button>
+											</form>
+											<a asp-controller="Appointment" asp-action="CancelAppointment" asp-route-id="@item.AppointmentTbls.Appointment_ID" data-toggle="tooltip" title="" data-original-title="Cancel" class="waves-effect waves-light btn btn-danger-light btn-circle mx-5"><span class="mdi mdi-close"><span class="path1"></span><span class="path2"></span></span></a>
+										</td>
+											}
+
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- /.box-body -->
+			</div>
+		</div>
+	</section>
+</div>
+
+<!-- /.content-wrapper -->
+<!--Model Popup Area-->
+<!-- result modal content -->
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="result-popup" aria-hidden="true" style="display: none;" id="result">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="result-popup">Radiology Investigations - Result</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+			</div>
+			<div class="modal-body">
+				<div class="row justify-content-between">
+					<div class="col-md-7 col-12">
+						<h4>Test Name - Neck Scan</h4>
+					</div>
+					<div class="col-md-5 col-12">
+						<h4 class="text-right">Lab Order Id : L0000002821</h4>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead class="bg-secondary">
+							<tr>
+								<th scope="col">Test</th>
+								<th scope="col">Result</th>
+								<th scope="col">Range</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Swelling Diameter</td>
+								<td>45 - 1000</td>
+								<td>&nbsp;</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td>&nbsp;</td>
+								<td>&nbsp;</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="comment">
+					<p><span class="font-weight-600">Comment</span> : <span class="comment-here text-mute">Lorem ipsum dolor sit amet, consectetur adipisicing elit. </span></p>
+				</div>
+				<div class="table-responsive">
+					<table class="table">
+						<tbody>
+							<tr>
+								<th colspan="2" class="b-0">Test By</th>
+								<th colspan="2" class="b-0">Signed By</th>
+							</tr>
+							<tr class="bg-secondary">
+								<td>Donald jr</td>
+								<td>Time : 11-8-2017   04:22</td>
+								<td>Lous Clark</td>
+								<td>Time : 11-8-2017   04:22</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger pull-right" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-info pull-right">Print</button>
+				<button type="button" class="btn btn-success pull-right">Save</button>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->

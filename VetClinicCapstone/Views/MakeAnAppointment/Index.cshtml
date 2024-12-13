@@ -1,0 +1,2314 @@
+﻿@{
+	ViewData["Title"] = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using VetClinicCapstone.Models.ViewModel;
+@model AppointmentPatientViewModel
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+<style>
+	.event-hover {
+		cursor: pointer;
+	}
+</style>
+<div class="container-full">
+	<div class="content-header">
+		<div class="d-flex align-items-center">
+			<div class="mr-auto">
+				<h4 class="page-title">Make an Appointment</h4>
+			</div>
+
+		</div>
+	</div>
+	<section class="content">
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="box">
+					<div class="box">
+						<div class="box-body">
+							<h3>Appointment Operation Days</h3>
+							<div id="calendar"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+
+</div>
+
+
+
+
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.js"></script>
+
+
+
+
+
+
+
+@* <script>
+	document.addEventListener('DOMContentLoaded', function () {
+		let calendarEl = document.getElementById('calendar');
+		let selectedDays = [];
+		let calendar;
+
+		// Initialize the calendar with events
+		function updateCalendar(selectedDays, appointmentCounts) {
+			var today = new Date();
+			var startDate = new Date(today.getFullYear(), 0, 1); // Start of the year
+			var endDate = new Date(today.getFullYear(), 11, 31); // End of the year
+
+			var clinicEvents = getEventDays(selectedDays, startDate, endDate, appointmentCounts);
+
+			fetchEventData().then(serverEvents => {
+				var combinedEvents = clinicEvents.concat(serverEvents);
+
+				var eventsByDate = {};
+
+				combinedEvents.forEach(event => {
+					var eventDate = event.start;
+
+					if (eventsByDate[eventDate]) {
+						if (event.title.toLowerCase() === 'close' ||
+							(event.title.toLowerCase() === 'half day' && eventsByDate[eventDate].title.toLowerCase() !== 'close')) {
+							eventsByDate[eventDate] = event;
+						}
+					} else {
+						eventsByDate[eventDate] = event;
+					}
+				});
+
+				var filteredEvents = Object.values(eventsByDate);
+
+				if (calendar) {
+					calendar.destroy();
+				}
+
+				calendar = new FullCalendar.Calendar(calendarEl, {
+					initialView: 'dayGridMonth',
+					headerToolbar: {
+						left: 'prev,next today',
+						center: 'title',
+						right: 'dayGridMonth,dayGridWeek,dayGridDay'
+					},
+					events: function (fetchInfo, successCallback, failureCallback) {
+						successCallback(filteredEvents);
+					},
+					eventDidMount: function (info) {
+						var event = info.event;
+						var el = info.el;
+
+						switch (event.title.toLowerCase()) {
+							case 'half day':
+								el.style.backgroundColor = 'orange';
+								el.style.borderColor = 'orange';
+								break;
+							case 'close':
+								el.style.backgroundColor = 'red';
+								el.style.borderColor = 'red';
+								break;
+							case 'full':
+								el.style.backgroundColor = 'red';
+								el.style.borderColor = 'red';
+								break;
+							default:
+								el.style.backgroundColor = 'green';
+								el.style.borderColor = 'green';
+						}
+						el.style.color = 'white';
+					},
+					eventClick: function (info) {
+						const eventTitle = info.event.title.toLowerCase();
+						if (eventTitle === 'available') {
+							showBookingModal(info.event.start);
+						} else if (eventTitle === 'half day') {
+							showHalfDayModal(info.event.start);
+						} else {
+							console.log('Fully booked or not available for booking.');
+						}
+					}
+				});
+
+				calendar.render();
+			});
+		}
+
+		// Fetch clinic days from the server
+		function fetchClinicDays() {
+			return $.ajax({
+				url: '/AppointSchedule/GetClinicDays', // Adjust URL as per your controller route
+				type: 'GET'
+			});
+		}
+
+		// Fetch appointment counts from the server
+		function fetchAppointmentCounts() {
+			return $.ajax({
+				url: '/AppointSchedule/GetAppointmentCounts', // Adjust URL as per your controller route
+				type: 'GET'
+			});
+		}
+
+		// Initialize checkboxes for clinic days
+		function initializeCheckboxes(selectedDays) {
+			$('input[name="clinicDays"]').each(function () {
+				if (selectedDays.includes($(this).val())) {
+					$(this).prop('checked', true);
+				} else {
+					$(this).prop('checked', false);
+				}
+			});
+		}
+
+		// Get event days based on selected clinic days and appointment counts
+		function getEventDays(selectedDays, startDate, endDate, appointmentCounts) {
+			var events = [];
+			var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+			for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+				var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+				// Check if the day is in the selected days and greater than today's date
+				if (selectedDays.includes(dayName) && d > new Date()) {
+					var checkDate = d.toISOString().split('T')[0];
+					var appointmentCount = appointmentCounts[checkDate] || 0;
+
+					events.push({
+						title: appointmentCount >= 10 ? 'FULL' : 'AVAILABLE',
+						start: checkDate,
+						backgroundColor: appointmentCount >= 10 ? 'red' : 'green',
+						borderColor: appointmentCount >= 10 ? 'red' : 'green',
+						textColor: 'white'
+					});
+				}
+			}
+
+			return events;
+		}
+
+		// Fetch existing events from the server
+		function fetchEventData() {
+			return $.ajax({
+				url: '/AppointSchedule/GetEvents', // URL of the action method
+				type: 'GET'
+			});
+		}
+
+		// Show the booking modal
+		function showBookingModal(date) {
+			var localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+			$('#appointmentDate').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate2').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate3').val(localDate.toISOString().split('T')[0]);
+
+			// Reset the appointment title to 'Available'
+			$('#appointmentTitle').val('Available');
+
+			// Populate the time options for a full day
+			$('#appointmentTime').html(`
+					<option value="">-Select-</option>
+					<option value="8:00 AM">8:00 AM</option>
+					<option value="9:00 AM">9:00 AM</option>
+					<option value="10:00 AM">10:00 AM</option>
+					<option value="11:00 AM">11:00 AM</option>
+					<option value="12:00 PM">12:00 PM</option>
+					<option value="1:00 PM">1:00 PM</option>
+					<option value="2:00 PM">2:00 PM</option>
+					<option value="3:00 PM">3:00 PM</option>
+					<option value="4:00 PM">4:00 PM</option>
+					<option value="5:00 PM">5:00 PM</option>
+				`);
+			$('#appointmentTime2').html(`
+					<option value="">-Select-</option>
+					<option value="8:00 AM">8:00 AM</option>
+					<option value="9:00 AM">9:00 AM</option>
+					<option value="10:00 AM">10:00 AM</option>
+					<option value="11:00 AM">11:00 AM</option>
+					<option value="12:00 PM">12:00 PM</option>
+					<option value="1:00 PM">1:00 PM</option>
+					<option value="2:00 PM">2:00 PM</option>
+					<option value="3:00 PM">3:00 PM</option>
+					<option value="4:00 PM">4:00 PM</option>
+					<option value="5:00 PM">5:00 PM</option>
+				`);
+			$('#appointmentTime3').html(`
+						<option value="">-Select-</option>
+						<option value="8:00 AM">8:00 AM</option>
+						<option value="9:00 AM">9:00 AM</option>
+						<option value="10:00 AM">10:00 AM</option>
+						<option value="11:00 AM">11:00 AM</option>
+						<option value="12:00 PM">12:00 PM</option>
+						<option value="1:00 PM">1:00 PM</option>
+						<option value="2:00 PM">2:00 PM</option>
+						<option value="3:00 PM">3:00 PM</option>
+						<option value="4:00 PM">4:00 PM</option>
+						<option value="5:00 PM">5:00 PM</option>
+					`);
+
+			$('#bookingModal').modal('show');
+		}
+
+		// Show the Half Day modal
+		function showHalfDayModal(date) {
+			var localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+			$('#appointmentDate').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate2').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate3').val(localDate.toISOString().split('T')[0]);
+
+			// Set the value for #appointmentTitle
+			$('#appointmentTitle').val('Half Day');
+
+			// Populate the time options for a half day
+			$('#appointmentTime').html(`
+					<option value="">-Select-</option>
+					<option value="8:00 AM">8:00 AM</option>
+					<option value="9:00 AM">9:00 AM</option>
+					<option value="10:00 AM">10:00 AM</option>
+					<option value="11:00 AM">11:00 AM</option>
+					<option value="12:00 PM">12:00 PM</option>
+				`);
+			$('#appointmentTime2').html(`
+					<option value="">-Select-</option>
+					<option value="8:00 AM">8:00 AM</option>
+					<option value="9:00 AM">9:00 AM</option>
+					<option value="10:00 AM">10:00 AM</option>
+					<option value="11:00 AM">11:00 AM</option>
+					<option value="12:00 PM">12:00 PM</option>
+				`);
+			$('#appointmentTime3').html(`
+						<option value="">-Select-</option>
+						<option value="8:00 AM">8:00 AM</option>
+						<option value="9:00 AM">9:00 AM</option>
+						<option value="10:00 AM">10:00 AM</option>
+						<option value="11:00 AM">11:00 AM</option>
+						<option value="12:00 PM">12:00 PM</option>
+					`);
+			$('#bookingModal').modal('show');
+		}
+
+		// Fetch clinic days and initialize the calendar
+		Promise.all([fetchClinicDays(), fetchAppointmentCounts()])
+			.then(([clinicDaysResponse, appointmentCountsResponse]) => {
+				selectedDays = clinicDaysResponse;
+				appointmentCounts = appointmentCountsResponse;
+
+				initializeCheckboxes(selectedDays);
+				updateCalendar(selectedDays, appointmentCounts);
+			});
+	});
+</script> *@
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		let calendarEl = document.getElementById('calendar');
+		let selectedDays = [];
+		let calendar;
+
+		// Initialize the calendar with events
+		function updateCalendar(selectedDays, appointmentCounts) {
+			var today = new Date();
+			var startDate = new Date(today.getFullYear(), 0, 1); // Start of the year
+			var endDate = new Date(today.getFullYear(), 11, 31); // End of the year
+
+			var clinicEvents = getEventDays(selectedDays, startDate, endDate, appointmentCounts);
+
+			fetchEventData().then(serverEvents => {
+				var combinedEvents = clinicEvents.concat(serverEvents);
+
+				var eventsByDate = {};
+
+				combinedEvents.forEach(event => {
+					var eventDate = event.start;
+
+					if (eventsByDate[eventDate]) {
+						if (event.title.toLowerCase() === 'close' ||
+							(event.title.toLowerCase() === 'half day' && eventsByDate[eventDate].title.toLowerCase() !== 'close')) {
+							eventsByDate[eventDate] = event;
+						}
+					} else {
+						eventsByDate[eventDate] = event;
+					}
+				});
+
+				var filteredEvents = Object.values(eventsByDate);
+
+				if (calendar) {
+					calendar.destroy();
+				}
+
+				calendar = new FullCalendar.Calendar(calendarEl, {
+					initialView: 'dayGridMonth',
+					headerToolbar: {
+						left: 'prev,next today',
+						center: 'title',
+						right: 'dayGridMonth,dayGridWeek,dayGridDay'
+					},
+					events: function (fetchInfo, successCallback, failureCallback) {
+						successCallback(filteredEvents);
+					},
+					eventDidMount: function (info) {
+						var event = info.event;
+						var el = info.el;
+
+						switch (event.title.toLowerCase()) {
+							case 'half day':
+								el.style.backgroundColor = 'orange';
+								el.style.borderColor = 'orange';
+								break;
+							case 'close':
+								el.style.backgroundColor = 'red';
+								el.style.borderColor = 'red';
+								break;
+							case 'full':
+								el.style.backgroundColor = 'red';
+								el.style.borderColor = 'red';
+								break;
+							default:
+								el.style.backgroundColor = 'green';
+								el.style.borderColor = 'green';
+						}
+						el.style.color = 'white';
+					},
+					eventClick: function (info) {
+						const eventTitle = info.event.title.toLowerCase();
+						if (eventTitle === 'available') {
+							showBookingModal(info.event.start);
+						} else if (eventTitle === 'half day') {
+							showHalfDayModal(info.event.start);
+						} else {
+							console.log('Fully booked or not available for booking.');
+						}
+					}
+				});
+
+				calendar.render();
+			});
+		}
+
+		// Fetch clinic days from the server
+		function fetchClinicDays() {
+			return $.ajax({
+				url: '/AppointSchedule/GetClinicDays', // Adjust URL as per your controller route
+				type: 'GET'
+			});
+		}
+
+		// Fetch appointment counts from the server
+		function fetchAppointmentCounts() {
+			return $.ajax({
+				url: '/AppointSchedule/GetAppointmentCounts', // Adjust URL as per your controller route
+				type: 'GET'
+			});
+		}
+
+		// Initialize checkboxes for clinic days
+		function initializeCheckboxes(selectedDays) {
+			$('input[name="clinicDays"]').each(function () {
+				if (selectedDays.includes($(this).val())) {
+					$(this).prop('checked', true);
+				} else {
+					$(this).prop('checked', false);
+				}
+			});
+		}
+
+		// Get event days based on selected clinic days and appointment counts
+		function getEventDays(selectedDays, startDate, endDate, appointmentCounts) {
+			var events = [];
+			var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+			for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+				var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+				// Check if the day is in the selected days and greater than today's date
+				if (selectedDays.includes(dayName) && d > new Date()) {
+					var checkDate = d.toISOString().split('T')[0];
+					var appointmentCount = appointmentCounts[checkDate] || 0;
+
+					events.push({
+						title: appointmentCount >= 10 ? 'FULL' : 'AVAILABLE',
+						start: checkDate,
+						backgroundColor: appointmentCount >= 10 ? 'red' : 'green',
+						borderColor: appointmentCount >= 10 ? 'red' : 'green',
+						textColor: 'white'
+					});
+				}
+			}
+
+			return events;
+		}
+
+		// Fetch existing events from the server
+		function fetchEventData() {
+			return $.ajax({
+				url: '/AppointSchedule/GetEvents', // URL of the action method
+				type: 'GET'
+			});
+		}
+
+		// Show the booking modal
+		function showBookingModal(date) {
+			var localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+			$('#appointmentDate').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate2').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate3').val(localDate.toISOString().split('T')[0]);
+
+			// Reset the appointment title to 'Available'
+			$('#appointmentTitle').val('Available');
+
+			// Populate the time options for a full day
+			$('#appointmentTime').html(`
+							<option value="">-Select-</option>
+							<option value="8:00 AM">8:00 AM</option>
+							<option value="9:00 AM">9:00 AM</option>
+							<option value="10:00 AM">10:00 AM</option>
+							<option value="11:00 AM">11:00 AM</option>
+							<option value="12:00 PM">12:00 PM</option>
+							<option value="1:00 PM">1:00 PM</option>
+							<option value="2:00 PM">2:00 PM</option>
+							<option value="3:00 PM">3:00 PM</option>
+							<option value="4:00 PM">4:00 PM</option>
+							<option value="5:00 PM">5:00 PM</option>
+						`);
+			$('#appointmentTime2').html(`
+							<option value="">-Select-</option>
+							<option value="8:00 AM">8:00 AM</option>
+							<option value="9:00 AM">9:00 AM</option>
+							<option value="10:00 AM">10:00 AM</option>
+							<option value="11:00 AM">11:00 AM</option>
+							<option value="12:00 PM">12:00 PM</option>
+							<option value="1:00 PM">1:00 PM</option>
+							<option value="2:00 PM">2:00 PM</option>
+							<option value="3:00 PM">3:00 PM</option>
+							<option value="4:00 PM">4:00 PM</option>
+							<option value="5:00 PM">5:00 PM</option>
+						`);
+			$('#appointmentTime3').html(`
+								<option value="">-Select-</option>
+								<option value="8:00 AM">8:00 AM</option>
+								<option value="9:00 AM">9:00 AM</option>
+								<option value="10:00 AM">10:00 AM</option>
+								<option value="11:00 AM">11:00 AM</option>
+								<option value="12:00 PM">12:00 PM</option>
+								<option value="1:00 PM">1:00 PM</option>
+								<option value="2:00 PM">2:00 PM</option>
+								<option value="3:00 PM">3:00 PM</option>
+								<option value="4:00 PM">4:00 PM</option>
+								<option value="5:00 PM">5:00 PM</option>
+							`);
+
+			$('#bookingModal').modal('show');
+		}
+
+		// Show the Half Day modal
+		function showHalfDayModal(date) {
+			var localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+			$('#appointmentDate').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate2').val(localDate.toISOString().split('T')[0]);
+			$('#appointmentDate3').val(localDate.toISOString().split('T')[0]);
+
+			// Set the value for #appointmentTitle
+			$('#appointmentTitle').val('Half Day');
+
+			// Populate the time options for a half day
+			$('#appointmentTime').html(`
+							<option value="">-Select-</option>
+							<option value="8:00 AM">8:00 AM</option>
+							<option value="9:00 AM">9:00 AM</option>
+							<option value="10:00 AM">10:00 AM</option>
+							<option value="11:00 AM">11:00 AM</option>
+							<option value="12:00 PM">12:00 PM</option>
+						`);
+			$('#appointmentTime2').html(`
+							<option value="">-Select-</option>
+							<option value="8:00 AM">8:00 AM</option>
+							<option value="9:00 AM">9:00 AM</option>
+							<option value="10:00 AM">10:00 AM</option>
+							<option value="11:00 AM">11:00 AM</option>
+							<option value="12:00 PM">12:00 PM</option>
+						`);
+			$('#appointmentTime3').html(`
+								<option value="">-Select-</option>
+								<option value="8:00 AM">8:00 AM</option>
+								<option value="9:00 AM">9:00 AM</option>
+								<option value="10:00 AM">10:00 AM</option>
+								<option value="11:00 AM">11:00 AM</option>
+								<option value="12:00 PM">12:00 PM</option>
+							`);
+			$('#bookingModal').modal('show');
+		}
+
+		// Fetch clinic days and initialize the calendar
+		Promise.all([fetchClinicDays(), fetchAppointmentCounts()]).then(([days, counts]) => {
+			selectedDays = days;
+			var appointmentCounts = counts.reduce((acc, curr) => {
+				acc[curr.date] = curr.count;
+				return acc;
+			}, {});
+			initializeCheckboxes(selectedDays);
+			updateCalendar(selectedDays, appointmentCounts);
+
+			// Update the calendar when clinic days are changed
+			$('input[name="clinicDays"]').change(function () {
+				var day = $(this).val();
+				if ($(this).is(':checked')) {
+					selectedDays.push(day);
+				} else {
+					selectedDays = selectedDays.filter(d => d !== day);
+				}
+				updateCalendar(selectedDays, appointmentCounts);
+
+				// Save updated days to the server
+				$.ajax({
+					url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+					type: 'POST',
+					data: JSON.stringify(selectedDays),
+					contentType: 'application/json',
+					success: function (response) {
+						console.log('Save response:', response);
+						window.location.href = '/AppointmentSchedule/AppointmentOperation';
+					},
+					error: function (xhr, status, error) {
+						console.error('Error saving data:', xhr, status, error);
+						alert('Failed to save data. Please try again.');
+					}
+				});
+			});
+		});
+
+		$('#confirmBooking').click(function () {
+			var appointmentDate = $('#appointmentDate').val();
+			var appointmentTime = $('#appointmentTime').val();
+
+			$.ajax({
+				url: "@Url.Action("CreateAppoint", "AppointSchedule")",
+				type: 'POST',
+				data: JSON.stringify({
+					date: appointmentDate,
+					time: appointmentTime
+				}),
+				contentType: 'application/json',
+				success: function (response) {
+					console.log('Booking response:', response);
+					$('#bookingModal').modal('hide');
+					Promise.all([fetchClinicDays(), fetchAppointmentCounts()]).then(([days, counts]) => {
+						selectedDays = days;
+						var appointmentCounts = counts.reduce((acc, curr) => {
+							acc[curr.date] = curr.count;
+							return acc;
+						}, {});
+						updateCalendar(selectedDays, appointmentCounts);
+					});
+				},
+				error: function (xhr, status, error) {
+					console.error('Error booking appointment:', xhr, status, error);
+					alert('Failed to book appointment. Please try again.');
+				}
+			});
+		});
+	});
+</script>
+
+
+
+
+
+<div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="bookingModalLabel">Book Appointment</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+
+
+
+
+				<div class="col-lg-12">
+
+
+
+
+					<div class="nav-tabs-custom">
+						<ul class="nav nav-tabs">
+							<li><a href="#usertimeline" data-toggle="tab">New client</a></li>
+							<li><a class="active" href="#activity" data-toggle="tab">Old client</a></li>
+						</ul>
+
+						<div class="tab-content">
+							<!-------------------------------------------------------------------AppointmentForm NEW CLIENT Form------------------------------------------------------------------------------------------------------------------->
+
+							<div class="tab-pane" id="usertimeline">
+
+
+								<form id="bookingForm" class="needs-validation" novalidate>
+									<div id="validationError" class="alert alert-danger d-none"></div>
+
+									<!-----OWNER INPUTS------->
+									<h4>Owner Profile</h4>
+									<div class="row">
+										<div class="col-md-6">
+
+											<div class="form-group">
+												<label>First Name <span class="text-danger">*</span></label>
+												<input name="Patient.PatientName" id="firstname" type="text" class="form-control" placeholder="First Name" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Middle Name</label>
+												<input name="Patient.Species" id="middlename" type="text" class="form-control" placeholder="Middle Name">
+		
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+
+											<div class="form-group">
+												<label>Last Name <span class="text-danger">*</span></label>
+												<input name="Patient.PatientName" id="lastname" type="text" class="form-control" placeholder="Last Name" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Suffix Name</label>
+												<input name="Patient.Species" id="suffixname" type="text" class="form-control" placeholder="Suffix Name">
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Street <span class="text-danger">*</span></label>
+												<input name="Patient.Species" id="street" type="text" class="form-control" placeholder="Street" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+
+											<div class="form-group">
+												<label>Barangay <span class="text-danger">*</span></label>
+												<input name="Patient.PatientName" id="barangay" type="text" class="form-control" placeholder="Barangay" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>City <span class="text-danger">*</span></label>
+												<input name="Patient.Species" id="city" type="text" class="form-control" placeholder="City" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+
+											<div class="form-group">
+												<label>Province <span class="text-danger">*</span></label>
+												<input name="Patient.PatientName" id="province" type="text" class="form-control" placeholder="Province" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+
+											<div class="form-group">
+												<label>Phone <span class="text-danger">*</span></label>
+												<input name="Patient.PatientName" id="phone" type="text" maxlength="13" class="form-control phoneClientNew" placeholder="Phone" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Sex <span class="text-danger">*</span></label>
+												<select name="Patient.Sex" class="form-control" id="sexowner" required>
+													<option value="">-Select-</option>
+													<option value="Male">Male</option>
+													<option value="Female">Female</option>
+
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<div class="form-group">
+												<label>E-mail</label>
+												<input name="Patient.Species" id="email" type="email" class="form-control" placeholder="E-mail">
+											</div>
+										</div>
+										
+									</div>
+									<!-----APPOINTMENT INPUTS------->
+									<hr />
+
+									<h4>Appointment Detail</h4>
+
+									<div class="form-group">
+										<label for="appointmentDate">Appointment Date</label>
+										<input name="Appointment.Date" id="appointmentDate" type="date" class="form-control" readonly>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label for="appointmentTime">Appointment Time <span class="text-danger">*</span></label>
+												<select name="Appointment.Time" id="appointmentTime" class="form-control" required>
+													<!-- Options will be populated by JavaScript -->
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+												<div id="timeError" class="invalid-feedback"></div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label for="services">Service <span class="text-danger">*</span></label>
+
+												<select name="Service.Service_ID" class="form-control" id="service" required>
+													<option value="">-Select-</option>
+													@foreach (var service in Model.ServiceList)
+													{
+														<option value="@service.Service_ID">@service.ServiceName</option>
+													}
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+									</div>
+									<hr/>
+									<h4>Pet Info</h4>
+									<!-----PET INPUTS------->
+									<div class="row">
+										<div class="col-md-6">
+
+											<div class="form-group">
+												<label>Patient Name <span class="text-danger">*</span></label>
+												<input name="Patient.PatientName" id="petname" type="text" class="form-control" placeholder="Patient Name" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Species <span class="text-danger">*</span></label>
+												<input name="Patient.Species" id="species" type="text" class="form-control" placeholder="Species" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Breed </label>
+												<input name="Patient.Breed" id="breed" type="text" class="form-control" placeholder="Breed">
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Color Marking <span class="text-danger">*</span></label>
+												<input name="Patient.ColorMarking" id="colormarking" type="text" class="form-control" placeholder="Color Marking" required>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Birthday</label>
+												<input name="Patient.Birthday" id="birthday" type="date" class="form-control" placeholder="Birth Date">
+
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label>Sex <span class="text-danger">*</span></label>
+												<select name="Patient.Sex" class="form-control" id="sex" required>
+													<option value="">-Select-</option>
+													<option value="Male">Male</option>
+													<option value="Female">Female</option>
+
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										<div class="col-md-12">
+											<div class="form-group">
+												<label>Description</label>
+												<textarea name="Patient.Description" id="description" class="form-control" rows="2" placeholder="Description"></textarea>
+											</div>
+										</div>
+									</div>
+									<button type="button" id="addPetBtn" class="btn btn-primary">Add Pet</button>
+								</form>
+								<div class="table-responsive">
+									<table class="table table-bordered mt-3">
+										<thead>
+											<tr>
+												<th>#</th>
+												<th>Date</th>
+												<th>Time</th>
+												<th>Services</th>
+												<th>Pet Name</th>
+												<th>Species</th>
+												<th>Breed</th>
+												<th>Birthday</th>
+												<th>Sex</th>
+												<th>Color Marking</th>
+												<th>Description</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+										<tbody id="petList"></tbody>
+									</table>
+								</div>
+								</div>
+							<!-- /.tab-pane -->
+
+							<script>
+								// Get today's date in the format YYYY-MM-DD
+								var today = new Date().toISOString().split('T')[0];
+
+								// Set the max attribute of the date input to today's date
+								document.getElementById('birthday').setAttribute('max', today);
+							</script>
+
+							<script>
+								// Function to format phone number dynamically
+								function formatPhoneNumber() {
+									let phoneNumberInput = document.getElementById('phone');
+									let phoneNumber = phoneNumberInput.value.replace(/\D/g, ''); // Remove non-numeric characters
+									let formattedPhoneNumber = '';
+
+									// Check if the phone number starts with 0 or 63
+									if (phoneNumber.startsWith('0')) {
+										formattedPhoneNumber = phoneNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3'); // Format as 0XXX-XXX-XXXX else {
+									}
+
+									// Update the input value with the formatted phone number
+									phoneNumberInput.value = formattedPhoneNumber;
+								}
+
+								// Attach event listener to input field to format phone number dynamically
+								document.getElementById('phone').addEventListener('input', formatPhoneNumber);
+							</script>
+
+							<script>
+								function toTitleCase(text) {
+									return text.replace(/\w\S*/g, function (txt) {
+										return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+									});
+								}
+
+								const inputFields = ["firstname", "middlename", "lastname", "suffixname", "province", "barangay", "city", "street", "petname", "species", "breed", "colormarking", "description",];
+
+
+								inputFields.forEach(function (fieldId) {
+									document.getElementById(fieldId).addEventListener("blur", function () {
+										this.value = toTitleCase(this.value);
+									});
+								});
+							</script>
+
+							<script>
+								$(document).ready(function () {
+									let patients = [];
+
+									$('#bookingModal').on('shown.bs.modal', function () {
+										const selectedDate = $('#appointmentDate').val();
+										if (selectedDate) {
+											fetchTakenTimes(selectedDate);
+										}
+									});
+
+									$('#appointmentTime, #appointmentDate').change(function () {
+										checkAvailability();
+									});
+
+									$('#buttonsave2').click(function (event) {
+										event.preventDefault();
+										if (patients.length === 0) {
+											showTableError();
+										} else {
+											saveAppointment();
+										}
+									});
+
+									$('#addPetBtn').click(function (event) {
+										event.preventDefault();
+										if (validateForm()) {
+											addPet();
+										}
+									});
+
+									$('#bookingModal').on('hidden.bs.modal', function () {
+										resetForm();
+									});
+
+									function validateForm() {
+										const form = $('#bookingForm')[0];
+										if (!form.checkValidity()) {
+											$(form).addClass('was-validated');
+											$('#validationError').removeClass('d-none').text('Please ensure the required fields are filled.');
+											return false;
+										}
+										return true;
+									}
+
+									function checkAvailability() {
+										const date = $('#appointmentDate').val();
+										const time = $('#appointmentTime').val();
+
+										if (date && time && time !== '-Select-') {
+											$.ajax({
+												url: '@Url.Action("CheckAvailability", "AppointSchedule")',
+												type: 'GET',
+												data: { date: date, time: time },
+												success: function (isAvailable) {
+													if (!isAvailable) {
+														showTimeTakenError();
+													} else {
+														clearTimeTakenError();
+													}
+												},
+												error: function (xhr, status, error) {
+													console.error('Error checking availability:', error);
+													$('#validationError').removeClass('d-none').text('An error occurred while checking availability.');
+												}
+											});
+										}
+									}
+
+									function showTimeTakenError() {
+										$('#appointmentTime').addClass('is-invalid');
+										$('#timeError').addClass('invalid-feedback').text('Time is already taken');
+										$('#validationError').removeClass('d-none').text('Time slot is already booked. Please choose another time.');
+									}
+
+									function clearTimeTakenError() {
+										$('#appointmentTime').removeClass('is-invalid');
+										$('#timeError').removeClass('invalid-feedback').text('');
+										$('#validationError').addClass('d-none').text('');
+									}
+
+									function showTableError() {
+										$('table').addClass('border-danger');
+										$('#validationError').removeClass('d-none').text('You must add at least one pet to the list.');
+									}
+
+									function clearTableError() {
+										$('table').removeClass('border-danger');
+										$('#validationError').addClass('d-none').text('');
+									}
+
+									function fetchTakenTimes(date) {
+										$.ajax({
+											url: '@Url.Action("GetTakenTimes", "MakeAnAppointment")',
+											type: 'GET',
+											data: { date: date },
+											success: function (data) {
+												markUnavailableTimes(data);
+											},
+											error: function (xhr, status, error) {
+												console.error('Error fetching taken times:', error);
+											}
+										});
+									}
+
+									function markUnavailableTimes(takenTimes) {
+										const options = $('#appointmentTime option');
+										options.each(function () {
+											if (takenTimes.includes($(this).val())) {
+												$(this).removeClass('available').addClass('unavailable');
+											} else {
+												$(this).removeClass('unavailable').addClass('available');
+											}
+										});
+									}
+
+									function addPet() {
+										const date = $('#appointmentDate').val();
+										const time = $('#appointmentTime').val();
+										const serviceName = $('#service option:selected').text();
+										const birthdayValue = $('#birthday').val() ? $('#birthday').val() : null;
+
+										$.ajax({
+											url: '@Url.Action("CheckAvailability", "AppointSchedule")',
+											type: 'GET',
+											data: { date: date, time: time },
+											success: function (isAvailable) {
+												if (isAvailable) {
+													const pet = {
+														Date: date,
+														Time: time,
+														ServiceName:serviceName,
+														Service_ID: $('#service').val(),
+														Petname: $('#petname').val(),
+														Species: $('#species').val(),
+														Breed: $('#breed').val(),
+														Birthday: birthdayValue,
+														Sex: $('#sex').val(),
+														ColorMarking: $('#colormarking').val(),
+														Description: $('#description').val(),
+													};
+
+													// Optionally, check for duplicate pets
+													if (patients.some(p => p.Petname === pet.Petname && p.Date === pet.Date && p.Time === pet.Time)) {
+														$('#validationError').removeClass('d-none').text('This pet is already added.');
+														return;
+													}
+
+													patients.push(pet);
+													renderPets();
+													clearForm();
+													clearTimeTakenError();
+													clearTableError();
+												} else {
+													showTimeTakenError();
+												}
+											},
+											error: function (xhr, status, error) {
+												console.error('Error checking availability for adding pet:', error);
+												$('#validationError').removeClass('d-none').text('An error occurred while checking availability.');
+											}
+										});
+									}
+
+									function renderPets() {
+										const petList = $('#petList');
+										petList.empty();
+										patients.forEach((pet, index) => {
+											petList.append(`
+														<tr>
+															<td>${index + 1}</td>
+															<td>${pet.Date}</td>
+															<td>${pet.Time}</td>
+															<td>${pet.ServiceName}</td>
+															<td>${pet.Petname}</td>
+															<td>${pet.Species}</td>
+															<td>${pet.Breed}</td>
+															<td>${pet.Birthday ||null}</td>
+															<td>${pet.Sex}</td>
+															<td>${pet.ColorMarking}</td>
+															<td>${pet.Description}</td>
+															<td>
+																<button type="button" class="btn btn-danger remove-pet" data-index="${index}">Remove</button>
+															</td>
+														</tr>
+													`);
+										});
+									}
+
+
+									$(document).on('click', '.remove-pet', function () {
+										const index = $(this).data('index');
+										removePet(index);
+									});
+
+									function clearForm() {
+										$('#appointmentTime').val('');
+										$('#service').val('');
+										$('#petname').val('');
+										$('#species').val('');
+										$('#breed').val('');
+										$('#colormarking').val('');
+										$('#birthday').val('');
+										$('#sex').val('');
+										$('#description').val('');
+										$('#bookingForm').removeClass('was-validated');
+									}
+
+									function removePet(index) {
+										patients.splice(index, 1);
+										renderPets();
+										if (patients.length === 0) {
+											showTableError();
+										}
+									}
+
+									function saveAppointment() {
+										const date = $('#appointmentDate').val();
+
+										const firstname = $('#firstname').val();
+										const midname = $('#middlename').val();
+										const lastname = $('#lastname').val();
+										const suffixname = $('#suffixname').val();
+										const province = $('#province').val();
+										const city = $('#city').val();
+										const barangay = $('#barangay').val();
+										const street = $('#street').val();
+										const phone = $('#phone').val();
+										const sex = $('#sexowner').val();
+										const email = $('#email').val();
+
+
+
+										if (patients.length === 0) {
+											showTableError();
+											return;
+										}
+										debugger
+
+										const petAppointments = patients.map(pet => ({
+											PetName: pet.Petname,
+											Species: pet.Species,
+											Breed: pet.Breed,
+											Sex: pet.Sex,
+											Birthday: pet.Birthday,
+											Service_ID: pet.Service_ID,
+											ColorMarking: pet.ColorMarking,
+											Description: pet.Description,
+											AppointmentTime: pet.Time // Use the specific time for each pet
+										}));
+										debugger
+										const data = JSON.stringify({
+											Firstname: firstname,
+											Middlename: midname,
+											Lastname: lastname,
+											SuffixName: suffixname,
+											Province: province,
+											City: city,
+											Barangay: barangay,
+											Street:street,
+											Phone: phone,
+											Sex: sex,
+											Email: email,
+											Date: date,
+											PetAppointments: petAppointments
+										});
+
+										$.ajax({
+											url: '@Url.Action("MakeAppointmentNewClient", "MakeAnAppointment")',
+											type: 'POST',
+											contentType: 'application/json',
+											data: data,
+											success: function (response) {
+												if (response.success) {
+													Swal.fire(
+														'Saved!',
+														response.message,
+														'success'
+													).then(() => {
+														window.location.reload();
+													});
+												} else {
+													Swal.fire(
+														'Error!',
+														response.message,
+														'error'
+													);
+												}
+											},
+											error: function (xhr, status, error) {
+												console.error('Error saving appointment:', error);
+												Swal.fire(
+													'Error!',
+													'An error occurred while saving the appointment.',
+													'error'
+												);
+											}
+										});
+									}
+
+									function resetForm() {
+										const form = $('#bookingForm')[0];
+										$(form).removeClass('was-validated');
+										form.reset();
+										clearTimeTakenError();
+										clearTableError();
+										patients = [];
+										renderPets();
+									}
+								});
+							</script>
+
+							<div class="active tab-pane" id="activity">
+
+
+								<!-------------------------------------------------------------------AppointmentForm2 Existing Pet Form------------------------------------------------------------------------------------------------------------------->
+
+
+								<button id="toggleFormBtn" class="btn btn-secondary -3 mb-20">Switch to Existing Pet Form</button>
+
+								<form id="bookingExistForm2" class="needs-validation" novalidate>
+									<div id="validationError3" class="alert alert-danger d-none"></div>
+
+								<div class="row">
+									<div class="col-lg-6">
+										<div class="form-group">
+											<label for="services">Owner Name <span class="text-danger">*</span></label>
+											<select name="Service.Owner_ID" class="form-control" id="owner3" required>
+												<option value="">-Select Owner-</option>
+												@foreach (var owner in Model.OwnerList)
+												{
+													<option value="@owner.Owner_ID">@owner.Firstname @owner.Lastname</option>
+												}
+											</select>
+											<div class="invalid-feedback">
+												This field is required
+											</div>
+										</div>
+									</div>
+									<div class="col-lg-6">
+										<div class="form-group">
+											<label for="services">Pet Name</label>
+											<small class="text-danger">if applicable</small>
+											<select name="Service.Patient_ID" class="form-control" id="pet" required>
+												<option value="">-Select Pet-</option>
+												@foreach (var pet in Model.PatientList)
+												{
+													<option value="@pet.Patient_ID" data-owner-id="@pet.Owner_ID">
+														<span class="option-content">
+															<strong>@pet.PatientName</strong> - @pet.Species, @pet.Breed, @pet.ColorMarking
+														</span>
+													</option>
+												}
+											</select>
+
+										</div>
+									</div>
+
+								</div>
+								<div class="form-group">
+									<label for="appointmentDate">Appointment Date</label>
+									<input name="Appointment.Date" id="appointmentDate3" type="date" class="form-control" readonly>
+								</div>
+
+								<div class="row">
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="appointmentTime">Appointment Time <span class="text-danger">*</span></label>
+											<select name="Appointment.Time" id="appointmentTime3" class="form-control" required>
+												<!-- Options will be populated by JavaScript -->
+											</select>
+											<div class="invalid-feedback">
+												This field is required
+											</div>
+											<div id="timeError3" class="invalid-feedback"></div>
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="form-group">
+											<label for="services">Service <span class="text-danger">*</span></label>
+
+											<select name="Service.Service_ID" class="form-control" id="service3" required>
+												<option value="">-Select-</option>
+												@foreach (var service in Model.ServiceList)
+												{
+													<option value="@service.Service_ID">@service.ServiceName</option>
+												}
+											</select>
+											<div class="invalid-feedback">
+												This field is required
+											</div>
+										</div>
+									</div>
+								</div>
+								<button type="button" id="addPetBtnExist3" class="btn btn-primary">Add Pet</button>
+									</form>
+
+
+
+						
+
+
+
+								<!-------------------------------------------------------------------AppointmentForm2 NEW Pet Form------------------------------------------------------------------------------------------------------------------->
+
+								<form id="bookingNewForm2" class="needs-validation" novalidate>
+									<div id="validationError2" class="alert alert-danger d-none"></div>
+
+									<div class="row">
+										<div class="col-lg-12">
+											<div class="form-group">
+												<label for="services">Owner Name <span class="text-danger">*</span></label>
+												<select name="Service.Owner_ID" class="form-control" id="owner" required>
+													<option value="">-Select Owner-</option>
+													@foreach (var owner in Model.OwnerList)
+													{
+														<option value="@owner.Owner_ID">@owner.Firstname @owner.Lastname</option>
+													}
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+										
+
+									</div>
+									<div class="form-group">
+										<label for="appointmentDate">Appointment Date</label>
+										<input name="Appointment.Date" id="appointmentDate2" type="date" class="form-control" readonly>
+									</div>
+
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label for="appointmentTime">Appointment Time <span class="text-danger">*</span></label>
+												<select name="Appointment.Time" id="appointmentTime2" class="form-control" required>
+													<!-- Options will be populated by JavaScript -->
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+												<div id="timeError2" class="invalid-feedback"></div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label for="services">Service <span class="text-danger">*</span></label>
+
+												<select name="Service.Service_ID" class="form-control" id="service2" required>
+													<option value="">-Select-</option>
+													@foreach (var service in Model.ServiceList)
+													{
+														<option value="@service.Service_ID">@service.ServiceName</option>
+													}
+												</select>
+												<div class="invalid-feedback">
+													This field is required
+												</div>
+											</div>
+										</div>
+									</div>
+										<div class="row">
+											<div class="col-md-6">
+
+												<div class="form-group">
+													<label>Patient Name <span class="text-danger">*</span></label>
+													<input name="Patient.PatientName" id="petname2" type="text" class="form-control" placeholder="Patient Name" required>
+													<div class="invalid-feedback">
+														This field is required
+													</div>
+												</div>
+											</div>
+											<div class="col-md-6">
+												<div class="form-group">
+													<label>Species <span class="text-danger">*</span></label>
+													<input name="Patient.Species" id="species2" type="text" class="form-control" placeholder="Species" required>
+													<div class="invalid-feedback">
+														This field is required
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label>Breed</label>
+													<input name="Patient.Breed" id="breed2" type="text" class="form-control" placeholder="Breed">
+												</div>
+											</div>
+											<div class="col-md-6">
+												<div class="form-group">
+													<label>Color Marking <span class="text-danger">*</span></label>
+													<input name="Patient.ColorMarking" id="colormarking2" type="text" class="form-control" placeholder="Color Marking" required>
+													<div class="invalid-feedback">
+														This field is required
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="row">
+											<div class="col-md-6">
+												<div class="form-group">
+													<label>Birthday</label>
+													<input name="Patient.Birthday" id="birthday2" type="date" class="form-control" placeholder="Birth Date">
+
+												</div>
+											</div>
+											<div class="col-md-6">
+												<div class="form-group">
+													<label>Sex <span class="text-danger">*</span></label>
+													<select name="Patient.Sex" class="form-control" id="sex2" required>
+														<option value="">-Select-</option>
+														<option value="Male">Male</option>
+														<option value="Female">Female</option>
+
+													</select>
+													<div class="invalid-feedback">
+														This field is required
+													</div>
+												</div>
+											</div>
+											<div class="col-md-12">
+												<div class="form-group">
+													<label>Description</label>
+													<textarea name="Patient.Description" id="description2" class="form-control" rows="2" placeholder="Description"></textarea>
+												</div>
+											</div>
+										</div>
+								
+									<button type="button" id="addPetBtnNew2" class="btn btn-primary">Add Pet</button>
+								</form>
+
+
+
+
+
+
+	
+									<div class="table-responsive">
+										<table class="table table-bordered mt-3">
+											<thead>
+												<tr>
+													<th>#</th>
+													<th>Date</th>
+													<th>Time</th>
+													<th>Services</th>
+													<th>Pet Name</th>
+													<th>Species</th>
+													<th>Breed</th>
+													<th>Birthday</th>
+													<th>Sex</th>
+													<th>Color Marking</th>
+													<th>Description</th>
+													<th>Actions</th>
+												</tr>
+											</thead>
+											<tbody id="petList2"></tbody>
+										</table>
+									</div>
+								
+						
+							</div>
+							<!-- /.tab-pane -->
+						</div>
+						<!-- /.tab-content -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="box-footer text-right">
+				<button data-dismiss="modal" type="button" class="btn btn-rounded btn-danger btn-outline mr-1">
+					<i class="mdi mdi-close"></i> Close
+				</button>
+				<button id="buttonsave2" type="button" class="btn btn-rounded btn-primary btn-outline">
+					<i class="mdi mdi-calendar-check"></i> Confirm Booking
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+<!-------------------------------------------------------------------Existing Pet Form------------------------------------------------------------------------------------------------------------------->
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+
+
+
+		$(document).ready(function () {
+			let patients = [];
+
+			$('#bookingModal').on('shown.bs.modal', function () {
+				const selectedDate = $('#appointmentDate2').val();
+				if (selectedDate) {
+					fetchTakenTimes(selectedDate);
+				}
+			});
+
+			$('#appointmentTime2, #appointmentDate2').change(function () {
+				checkAvailability();
+			});
+
+			$('#buttonsave2').click(function (event) {
+				event.preventDefault();
+				if (patients.length === 0) {
+					showTableError();
+				} else {
+					saveAppointment();
+				}
+			});
+
+			$('#addPetBtnNew2').click(function (event) {
+				debugger
+				event.preventDefault();
+				if (validateForm()) {
+					addPet();
+				}
+			});
+
+			$('#bookingModal').on('hidden.bs.modal', function () {
+				resetForm();
+			});
+
+			function validateForm() {
+				const form = $('#bookingNewForm2')[0];
+				if (!form.checkValidity()) {
+					$(form).addClass('was-validated');
+					$('#validationError2').removeClass('d-none').text('Please ensure the required fields are filled.');
+					return false;
+				}
+				return true;
+			}
+
+			function checkAvailability() {
+				const date = $('#appointmentDate2').val();
+				const time = $('#appointmentTime2').val();
+
+				if (date && time && time !== '-Select-') {
+					$.ajax({
+						url: '@Url.Action("CheckAvailability", "AppointSchedule")',
+						type: 'GET',
+						data: { date: date, time: time },
+						success: function (isAvailable) {
+							if (!isAvailable) {
+								showTimeTakenError();
+							} else {
+								clearTimeTakenError();
+							}
+						},
+						error: function (xhr, status, error) {
+							console.error('Error checking availability:', error);
+							$('#validationError2').removeClass('d-none').text('An error occurred while checking availability.');
+						}
+					});
+				}
+			}
+
+			function showTimeTakenError() {
+				$('#appointmentTime2').addClass('is-invalid');
+				$('#timeError2').addClass('invalid-feedback').text('Time is already taken');
+				$('#validationError2').removeClass('d-none').text('Time slot is already booked. Please choose another time.');
+			}
+
+			function clearTimeTakenError() {
+				$('#appointmentTime2').removeClass('is-invalid');
+				$('#timeError2').removeClass('invalid-feedback').text('');
+				$('#validationError2').addClass('d-none').text('');
+			}
+
+			function showTableError() {
+				$('table').addClass('border-danger');
+				$('#validationError2').removeClass('d-none').text('You must add at least one pet to the list.');
+			}
+
+			function clearTableError() {
+				$('table').removeClass('border-danger');
+				$('#validationError2').addClass('d-none').text('');
+			}
+
+			function fetchTakenTimes(date) {
+				$.ajax({
+					url: '@Url.Action("GetTakenTimes", "MakeAnAppointment")',
+					type: 'GET',
+					data: { date: date },
+					success: function (data) {
+						markUnavailableTimes(data);
+					},
+					error: function (xhr, status, error) {
+						console.error('Error fetching taken times:', error);
+					}
+				});
+			}
+
+			function markUnavailableTimes(takenTimes) {
+				const options = $('#appointmentTime2 option');
+				options.each(function () {
+					if (takenTimes.includes($(this).val())) {
+						$(this).removeClass('available').addClass('unavailable');
+					} else {
+						$(this).removeClass('unavailable').addClass('available');
+					}
+				});
+			}
+
+			function addPet() {
+				const date = $('#appointmentDate2').val();
+				const time = $('#appointmentTime2').val();
+				const serviceID = $('#service2').val();
+				const ownerId = $('#owner').val();
+				const serviceName = $('#service2 option:selected').text();
+				const birthdayValue = $('#birthday2').val() ? $('#birthday2').val() : null;
+
+
+				$.ajax({
+					url: '@Url.Action("CheckAvailability", "AppointSchedule")',
+					type: 'GET',
+					data: { date: date, time: time },
+					success: function (isAvailable) {
+						if (isAvailable) {
+							const pet = {
+								Date: date,
+								Time: time,
+								Service_ID: serviceID,
+								Owner_ID: ownerId,
+								ServiceName: serviceName,
+								Petname: $('#petname2').val(),
+								Species: $('#species2').val(),
+								Breed: $('#breed2').val(),
+								Birthday: birthdayValue,
+								Sex: $('#sex2').val(),
+								ColorMarking: $('#colormarking2').val(),
+								Description: $('#description2').val(),
+							};
+
+							// Optionally, check for duplicate pets
+							if (patients.some(p => p.Petname === pet.Petname && p.Date === pet.Date && p.Time === pet.Time)) {
+								$('#validationError2').removeClass('d-none').text('This pet is already added.');
+								return;
+							}
+
+							patients.push(pet);
+							renderPets();
+							clearForm();
+							clearTimeTakenError();
+							clearTableError();
+						} else {
+							showTimeTakenError();
+						}
+					},
+					error: function (xhr, status, error) {
+						console.error('Error checking availability for adding pet:', error);
+						$('#validationError2').removeClass('d-none').text('An error occurred while checking availability.');
+					}
+				});
+			}
+			function renderPets() {
+				const petList = $('#petList2');
+				petList.empty(); // Clear existing rows
+				patients.forEach((pet, index) => {
+					petList.append(`
+																							<tr>
+																								<td>${index + 1}</td>
+																								<td>${pet.Date}</td>
+																								<td>${pet.Time}</td>
+																								<td>${pet.ServiceName}</td>
+																								<td>${pet.Petname}</td>
+																								<td>${pet.Species}</td>
+																								<td>${pet.Breed}</td>
+																								<td>${pet.Birthday || null}</td>
+																								<td>${pet.Sex}</td>
+																								<td>${pet.ColorMarking}</td>
+																								<td>${pet.Description}</td>
+																								<td>
+																									<button type="button" class="btn btn-danger remove-pet-2" data-index="${index}">Remove</button>
+																								</td>
+																							</tr>
+																						`);
+				});
+			}
+
+			$(document).on('click', '.remove-pet-2', function () {
+				const index = $(this).data('index');
+				removePet(index);
+			});
+
+			function clearForm() {
+				$('#appointmentTime2').val('');
+				$('#service2').val('');
+				$('#petname2').val('');
+				$('#species2').val('');
+				$('#breed2').val('');
+				$('#colormarking2').val('');
+				$('#birthday2').val('');
+				$('#sex2').val('');
+				$('#description2').val('');
+				$('#bookingNewForm2').removeClass('was-validated');
+			}
+
+			function removePet(index) {
+				patients.splice(index, 1);
+				renderPets();
+				if (patients.length === 0) {
+					showTableError();
+				}
+			}
+
+			function saveAppointment() {
+				const date = $('#appointmentDate2').val();
+
+
+				if (patients.length === 0) {
+					showTableError();
+					return;
+				}
+
+				const petAppointments = patients.map(pet => ({
+					PetName: pet.Petname,
+					Species: pet.Species,
+					Breed: pet.Breed,
+					Sex: pet.Sex,
+					Birthday: pet.Birthday,
+					Patient_ID: pet.Patient_ID,
+					Owner_ID: pet.Owner_ID,
+					Service_ID: pet.Service_ID,
+					ColorMarking: pet.ColorMarking,
+					Description: pet.Description,
+					AppointmentTime: pet.Time // Use the specific time for each pet
+				}));
+
+				const data = JSON.stringify({
+					Date: date,
+					PetAppointments: petAppointments
+				});
+
+				$.ajax({
+					url: '@Url.Action("MakeAppointmentOldClient", "MakeAnAppointment")',
+					type: 'POST',
+					contentType: 'application/json',
+					data: data,
+					success: function (response) {
+						if (response.success) {
+							Swal.fire(
+								'Saved!',
+								response.message,
+								'success'
+							).then(() => {
+								window.location.reload();
+							});
+						} else {
+							Swal.fire(
+								'Error!',
+								response.message,
+								'error'
+							);
+						}
+					},
+					error: function (xhr, status, error) {
+						console.error('Error saving appointment:', error);
+						Swal.fire(
+							'Error!',
+							'An error occurred while saving the appointment.',
+							'error'
+						);
+					}
+				});
+			}
+
+			function resetForm() {
+				const form = $('#bookingNewForm2')[0];
+				$(form).removeClass('was-validated');
+				form.reset();
+				clearTimeTakenError();
+				clearTableError();
+				patients = [];
+				renderPets();
+			}
+
+			// Global variable to hold pet data
+
+
+
+			function validateForm3() {
+				const form = $('#bookingExistForm2')[0];
+				if (!form.checkValidity()) {
+					$(form).addClass('was-validated');
+					$('#validationError3').removeClass('d-none').text('Please ensure the required fields are filled.');
+					return false;
+				}
+				return true;
+			}
+
+
+
+			$('#addPetBtnExist3').click(function (event) {
+				debugger
+				event.preventDefault();
+				if (validateForm3()) {
+					addPet3();
+				}
+			});
+
+
+			function addPet3() {
+				const patientId = document.getElementById('pet').value;
+				const appointmentDate = document.getElementById('appointmentDate3').value;
+				const appointmentTime = document.getElementById('appointmentTime3').value;
+				const serviceId = document.getElementById('service3').value;
+				const serviceName = $('#service3 option:selected').text();
+				const ownerId = document.getElementById('owner3').value;
+
+				if (!patientId || !appointmentDate || !appointmentTime || !serviceName) {
+					console.log('Validation failed: Missing fields');
+					$('#validationError3').removeClass('d-none').text('Please select all required fields.');
+					return;
+				}
+
+				$.ajax({
+					url: '@Url.Action("CheckAvailability", "AppointSchedule")',
+					type: 'GET',
+					data: { date: appointmentDate, time: appointmentTime },
+					success: function (isAvailable) {
+						if (!isAvailable) {
+							console.log('Time slot not available');
+							$('#validationError3').removeClass('d-none').text('The selected time slot is not available.');
+							return;
+						}
+
+						fetch(`/MakeAnAppointment/GetPetDetails?patientId=${patientId}`)
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('Network response was not ok');
+								}
+								return response.json();
+							})
+							.then(data => {
+								if (Array.isArray(data) && data.length > 0) {
+									// Check if the pet with the same details is already in the `patients` array
+									const petDetails = data[0]; // Assuming data is an array of pets, and you want to check the first item
+									if (patients.some(p => p.Petname === petDetails.patientName && p.Date === appointmentDate && p.Time === appointmentTime)) {
+									
+										$('#validationError3').removeClass('d-none').text('This pet is already added.');
+										return;
+									}
+
+									// If not already added, add new data to the `patients` array
+									data.forEach(item => {
+										patients.push({
+											Date: appointmentDate,
+											Time: appointmentTime,
+											Owner_ID: ownerId,
+											Service_ID: serviceId,
+											Patient_ID: patientId,
+											ServiceName: serviceName,
+											Petname: item.patientName,
+											Species: item.species,
+											Breed: item.breed,
+											Birthday: item.birthday,
+											Sex: item.sex,
+											ColorMarking: item.colorMarking,
+											Description: item.description
+										});
+									});
+
+									// Clear and re-render the pet list
+									renderPets();
+
+									$('#validationError3').addClass('d-none'); // Hide validation error if the pet was added successfully
+								} else {
+									$('#validationError3').removeClass('d-none').text('No details found for the selected pet.');
+								}
+							})
+							.catch(error => {
+								console.error('Error fetching pet details:', error);
+								$('#validationError3').removeClass('d-none').text('An error occurred while fetching pet details.');
+							});
+					},
+					error: function (xhr, status, error) {
+						console.error('Error checking availability:', error);
+						$('#validationError3').removeClass('d-none').text('An error occurred while checking availability.');
+					}
+				});
+			}
+
+
+
+
+
+
+
+
+		});
+
+
+		
+
+		let rowIndex = 1; // Initialize the index counter
+
+
+
+
+		$('#bookingModal').on('shown.bs.modal', function () {
+			const selectedDate = $('#appointmentDate3').val();
+			if (selectedDate) {
+				fetchTakenTimes(selectedDate);
+			}
+		});
+
+		function fetchTakenTimes(date) {
+			$.ajax({
+				url: '@Url.Action("GetTakenTimes", "MakeAnAppointment")',
+				type: 'GET',
+				data: { date: date },
+				success: function (data) {
+					markUnavailableTimes(data);
+				},
+				error: function (xhr, status, error) {
+					console.error('Error fetching taken times:', error);
+				}
+			});
+		}
+
+		function markUnavailableTimes(takenTimes) {
+			const options = $('#appointmentTime3 option');
+			options.each(function () {
+				if (takenTimes.includes($(this).val())) {
+					$(this).removeClass('available').addClass('unavailable');
+				} else {
+					$(this).removeClass('unavailable').addClass('available');
+				}
+			});
+		}
+		$('#appointmentTime3, #appointmentDate3').change(function () {
+			checkAvailability();
+		});
+
+		function checkAvailability() {
+			const date = $('#appointmentDate3').val();
+			const time = $('#appointmentTime3').val();
+
+			if (date && time && time !== '-Select-') {
+				$.ajax({
+					url: '@Url.Action("CheckAvailability", "AppointSchedule")',
+					type: 'GET',
+					data: { date: date, time: time },
+					success: function (isAvailable) {
+						if (!isAvailable) {
+							showTimeTakenError();
+						} else {
+							clearTimeTakenError();
+						}
+					},
+					error: function (xhr, status, error) {
+						console.error('Error checking availability:', error);
+						$('#validationError3').removeClass('d-none').text('An error occurred while checking availability.');
+					}
+				});
+			}
+		}
+		function showTimeTakenError() {
+			$('#appointmentTime3').addClass('is-invalid');
+			$('#timeError3').addClass('invalid-feedback').text('Time is already taken');
+			$('#validationError3').removeClass('d-none').text('Time slot is already booked. Please choose another time.');
+		}
+
+		function clearTimeTakenError() {
+			$('#appointmentTime3').removeClass('is-invalid');
+			$('#timeError3').removeClass('invalid-feedback').text('');
+			$('#validationError3').addClass('d-none').text('');
+		}
+
+	});
+
+</script>
+<!-------------------------------------------------------------------AppointmentForm NEW Client Form------------------------------------------------------------------------------------------------------------------->
+
+<script>
+	function toTitleCase(text) {
+		return text.replace(/\w\S*/g, function (txt) {
+			return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+		});
+	}
+
+	const inputFields1 = ["colormarking", "petname", "species", "breed", "description"];
+
+
+	inputFields1.forEach(function (fieldId) {
+		document.getElementById(fieldId).addEventListener("blur", function () {
+			this.value = toTitleCase(this.value);
+		});
+	});
+</script>
+<script>
+	document.getElementById("description").addEventListener("blur", function () {
+		this.value = this.value.replace(/\w\S*/g, function (txt) {
+			return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+		});
+	});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style>
+	.unavailable {
+		background-color: red; /* Red background for unavailable options */
+		color: white; /* White text for better visibility */
+	}
+
+	.available {
+		background-color: white; /* Default background for available options */
+		color: black; /* Default text color */
+	}
+</style>
+
+
+
+<script src="~/js/helper.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-------------------------------------------------------------------Switching Existing Form------------------------------------------------------------------------------------------------------------------->
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const ownerSelect = document.getElementById('owner3');
+		const petSelect = document.getElementById('pet');
+		const petFormNew = document.getElementById('bookingNewForm2');
+		const petFormExisting = document.getElementById('bookingExistForm2');
+		const toggleFormBtn = document.getElementById('toggleFormBtn');
+
+		// Function to handle the pet selection change in bookingNewForm2
+		const handlePetSelectionChange = function () {
+			const selectedPetNew = petSelect.value;
+
+			// If a pet is selected in the new form, hide the new form and show the existing form
+			if (selectedPetNew) {
+				petFormNew.style.display = 'none';
+				petFormExisting.style.display = 'block';
+			} else {
+				petFormNew.style.display = 'block';
+				petFormExisting.style.display = 'none';
+			}
+		};
+
+		// Attach event listener for pet selection change in bookingNewForm2
+		petSelect.addEventListener('change', handlePetSelectionChange);
+
+		// Initially hide all pets until an owner is selected
+		Array.from(petSelect.options).forEach(option => {
+			option.style.display = 'none';
+		});
+
+		// Remove or modify the ownerSelect change logic to avoid changing form visibility
+		ownerSelect.addEventListener('change', function () {
+			const selectedOwnerId = this.value;
+
+			// If no owner is selected, hide all pet options
+			if (!selectedOwnerId) {
+				Array.from(petSelect.options).forEach(option => {
+					option.style.display = 'none';
+				});
+				petSelect.value = ''; // Reset pet selection
+				return;
+			}
+
+			// Filter pets based on selected owner
+			Array.from(petSelect.options).forEach(option => {
+				const ownerId = option.getAttribute('data-owner-id');
+				if (ownerId === selectedOwnerId) {
+					option.style.display = '';
+				} else {
+					option.style.display = 'none';
+				}
+			});
+		});
+
+		// Initial check for pet selection visibility
+		handlePetSelectionChange();
+
+		// Toggle button to switch between forms
+		toggleFormBtn.addEventListener('click', function () {
+			if (petFormNew.style.display === 'none') {
+				// Show the new pet form and hide the existing pet form
+				petFormNew.style.display = 'block';
+				petFormExisting.style.display = 'none';
+				this.textContent = 'Switch to Existing Pet Form';
+			} else {
+				// Show the existing pet form and hide the new pet form
+				petFormNew.style.display = 'none';
+				petFormExisting.style.display = 'block';
+				this.textContent = 'Switch to New Pet Form';
+			}
+		});
+	});
+</script>
+
+
+<script>
+	function toTitleCase2(text) {
+		debugger
+		return text.replace(/\w\S*/g, function (txt) {
+			return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+		});
+	}
+
+	const inputFields2 = ["petname2", "species2", "breed2", "colormarking2", "description2",];
+
+
+	inputFields2.forEach(function (fieldId2) {
+		document.getElementById(fieldId2).addEventListener("blur", function () {
+			this.value = toTitleCase2(this.value);
+		});
+	});
+</script>
+<script>
+	// Get today's date in the format YYYY-MM-DD
+	var today = new Date().toISOString().split('T')[0];
+
+	// Set the max attribute of the date input to today's date
+	document.getElementById('birthday2').setAttribute('max', today);
+</script>
+@* <script>
+	document.addEventListener('DOMContentLoaded', function () {
+		const ownerSelect = document.getElementById('owner3');
+		const petSelect = document.getElementById('pet');
+		const petFormNew = document.getElementById('bookingNewForm2');
+		const petFormExisting = document.getElementById('bookingExistForm2');
+		const toggleFormBtn = document.getElementById('toggleFormBtn');
+
+		// Function to handle the pet selection change in bookingNewForm2
+		const handlePetSelectionChange = function () {
+			const selectedPetNew = petSelect.value;
+
+			// If a pet is selected in the new form, hide the new form and show the existing form
+			if (selectedPetNew) {
+				petFormNew.style.display = 'none';
+				petFormExisting.style.display = 'block';
+			} else {
+				petFormNew.style.display = 'block';
+				petFormExisting.style.display = 'none';
+			}
+		};
+
+		// Attach event listener for pet selection change in bookingNewForm2
+		petSelect.addEventListener('change', handlePetSelectionChange);
+
+		// Initially hide all pets until an owner is selected
+		Array.from(petSelect.options).forEach(option => {
+			option.style.display = 'none';
+		});
+
+		ownerSelect.addEventListener('change', function () {
+			const selectedOwnerId = this.value;
+
+			// If no owner is selected, hide all pet options
+			if (!selectedOwnerId) {
+				Array.from(petSelect.options).forEach(option => {
+					option.style.display = 'none';
+				});
+				petSelect.value = ''; // Reset pet selection
+				return;
+			}
+
+			// Filter pets based on selected owner
+			let hasVisiblePets = false;
+			Array.from(petSelect.options).forEach(option => {
+				const ownerId = option.getAttribute('data-owner-id');
+				if (ownerId === selectedOwnerId) {
+					option.style.display = '';
+					hasVisiblePets = true;
+				} else {
+					option.style.display = 'none';
+				}
+			});
+
+			// If no pets match the selected owner, reset pet selection
+			if (!hasVisiblePets) {
+				petSelect.value = '';
+			}
+
+			// Check the initial state of the pet selection on page load
+			handlePetSelectionChange();
+		});
+
+		// Initial check for pet selection visibility
+		handlePetSelectionChange();
+
+		// Toggle button to switch between forms
+		toggleFormBtn.addEventListener('click', function () {
+			if (petFormNew.style.display === 'none') {
+				// Show the new pet form and hide the existing pet form
+				petFormNew.style.display = 'block';
+				petFormExisting.style.display = 'none';
+				this.textContent = 'Switch to Existing Pet Form';
+			} else {
+				// Show the existing pet form and hide the new pet form
+				petFormNew.style.display = 'none';
+				petFormExisting.style.display = 'block';
+				this.textContent = 'Switch to New Pet Form';
+			}
+		});
+	});
+</script> *@
+
+<script>
+	$(document).ready(function () {
+	@if (TempData["ToastSuccessMsg"] != null)
+	{
+		<text>
+				toastr.success('@TempData["ToastSuccessMsg"]');
+		</text>
+	}
+
+
+					});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+
+
+
+
+
+
+
+

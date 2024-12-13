@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+@using VetClinicCapstone.Models.ViewModel
+@model UserAndOwnerViewModel
+
+<style>
+    .profile-header {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .profile-img {
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .profile-info h4 {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link.active {
+        font-weight: bold;
+    }
+
+    .card-header {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div class="profile-header d-flex align-items-center">
+                <div class="profile-img-container mr-3">
+                    <img src="~/images/preview/profilepic.png" alt="Profile Image" class="profile-img">
+                </div>
+                <div class="profile-info">
+                    <h4 class="mb-1">@Model.OwnerDetail.Firstname @Model.OwnerDetail.Lastname</h4>
+                    <p class="text-muted mb-1">@Model.OwnerDetail.Email</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Personal Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="form-group row">
+                                <div class="col-sm-6">
+                                    <label for="inputName" class="col-form-label">Name</label>
+                                    <input type="text" class="form-control" id="inputName" value="@Model.OwnerDetail.Firstname @Model.OwnerDetail.Lastname" readonly>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="inputEmail" class="col-form-label">Email</label>
+                                    <input type="email" class="form-control" id="inputEmail" value="@Model.OwnerDetail.Email" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-6">
+                                    <label for="inputPhone" class="col-form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="inputPhone" value="@Model.OwnerDetail.Phone" readonly>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="inputStreet" class="col-form-label">Street</label>
+                                    <input type="text" class="form-control" id="inputStreet" value="@Model.OwnerDetail.Street" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-6">
+                                    <label for="inputBarangay" class="col-form-label">Barangay</label>
+                                    <input type="text" class="form-control" id="inputBarangay" value="@Model.OwnerDetail.Baranggay" readonly>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="inputCity" class="col-form-label">City</label>
+                                    <input type="text" class="form-control" id="inputCity" value="@Model.OwnerDetail.City" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-6">
+                                    <label for="inputProvince" class="col-form-label">Province</label>
+                                    <input type="text" class="form-control" id="inputProvince" value="@Model.OwnerDetail.Province" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+

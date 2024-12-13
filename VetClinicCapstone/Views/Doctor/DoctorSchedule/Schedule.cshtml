@@ -1,0 +1,1581 @@
+﻿@{
+    ViewData["Title"] = "DoctorDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    #context-menu {
+        position: absolute;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        border-radius: 4px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        #context-menu li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+            #context-menu li:hover {
+                background: #f5f5f5;
+            }
+</style>
+
+<div class="container my-5">
+    <section class="content">
+        <div class="box shadow-sm rounded">
+            <div class="box-body p-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="mb-4 text-primary">Appointment Operation Days</h3>
+                        <form id="clinicDaysForm">
+                            <div class="form-check mb-2">
+                                <input type="checkbox" id="md_checkbox_1" name="clinicDays" value="Monday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_1">Monday</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" id="md_checkbox_2" name="clinicDays" value="Tuesday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_2">Tuesday</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" id="md_checkbox_3" name="clinicDays" value="Wednesday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_3">Wednesday</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" id="md_checkbox_4" name="clinicDays" value="Thursday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_4">Thursday</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" id="md_checkbox_5" name="clinicDays" value="Friday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_5">Friday</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" id="md_checkbox_6" name="clinicDays" value="Saturday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_6">Saturday</label>
+                            </div>
+                            <div class="form-check mb-4">
+                                <input type="checkbox" id="md_checkbox_7" name="clinicDays" value="Sunday" class="form-check-input" />
+                                <label class="form-check-label" for="md_checkbox_7">Sunday</label>
+                            </div>
+                        </form>
+
+                        <h4 class="mb-3 text-secondary">Events</h4>
+                        <div class="box-body p-0 col-lg-6">
+                            <div id="external-events">
+                                <div class="external-event p-2 mb-2 bg-danger text-white rounded" data-class="bg-danger" data-id="1">
+                                    <i class="fa fa-hand-o-right"></i> Close
+                                </div>
+                                <div class="external-event p-2 mb-2 bg-warning text-dark rounded" data-class="bg-warning" data-id="2">
+                                    <i class="fa fa-hand-o-right"></i> Half day
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="calendar" class="border rounded p-3 shadow-sm bg-white"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let calendarEl = document.getElementById('calendar');
+        let selectedDays = [];
+        let calendar;
+
+        // Enable dragging for external events
+        new FullCalendar.Draggable(document.getElementById('external-events'), {
+            itemSelector: '.external-event',
+            eventData: function (eventEl) {
+                return {
+                    title: eventEl.innerText.trim()
+                };
+            }
+        });
+
+        // Initialize the calendar with events
+        function updateCalendar(selectedDays) {
+            var today = new Date();
+            var startDate = new Date(today.getFullYear(), 0, 1); // Start of the year
+            var endDate = new Date(today.getFullYear(), 11, 31); // End of the year
+
+            var clinicEvents = getEventDays(selectedDays, startDate, endDate);
+
+            fetchEventData().then(serverEvents => {
+                var combinedEvents = clinicEvents.concat(serverEvents);
+
+                var eventsByDate = {};
+
+                combinedEvents.forEach(event => {
+                    var eventDate = event.start;
+
+                    if (eventsByDate[eventDate]) {
+                        if (event.title.toLowerCase() === 'close' ||
+                            (event.title.toLowerCase() === 'half day' && eventsByDate[eventDate].title.toLowerCase() !== 'close')) {
+                            eventsByDate[eventDate] = event;
+                        }
+                    } else {
+                        eventsByDate[eventDate] = event;
+                    }
+                });
+
+                var filteredEvents = Object.values(eventsByDate);
+
+                if (calendar) {
+                    calendar.destroy();
+                }
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                    },
+                    droppable: true,
+                    editable: true,
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        successCallback(filteredEvents);
+                    },
+                    eventReceive: function (info) {
+                        saveEvent(info.event);
+                    },
+                    eventDrop: function (info) {
+                        saveEvent(info.event);
+                    },
+                    eventDidMount: function (info) {
+                        var event = info.event;
+                        var el = info.el;
+
+                        switch (event.title.toLowerCase()) {
+                            case 'half day':
+                                el.style.backgroundColor = 'orange';
+                                el.style.borderColor = 'orange';
+                                break;
+                            case 'close':
+                                el.style.backgroundColor = 'red';
+                                el.style.borderColor = 'red';
+                                break;
+                            default:
+                                el.style.backgroundColor = 'green';
+                                el.style.borderColor = 'green';
+                        }
+                        el.style.color = 'white';
+
+                        // Only attach the context menu if the event is "Half Day" or "Close"
+                        if (event.title.toLowerCase() === 'half day' || event.title.toLowerCase() === 'close') {
+                            $(el).contextmenu(function (event) {
+                                event.preventDefault();
+                                showContextMenu(event, info.event);
+                            });
+                        }
+                    }
+                });
+
+                calendar.render();
+            });
+        }
+        function showContextMenu(event, calendarEvent) {
+            // Remove any existing context menu
+            $('#context-menu').remove();
+
+            var menuHtml = `<ul id="context-menu" class="ui-helper-hidden">
+                                <li id="delete-event">Delete Event</li>
+                            </ul>`;
+            $('body').append(menuHtml);
+
+            $('#context-menu').css({
+                top: event.pageY,
+                left: event.pageX
+            }).show();
+
+            $('#delete-event').click(function () {
+                deleteEvent(calendarEvent);
+                $('#context-menu').remove();
+            });
+
+            $(document).click(function () {
+                $('#context-menu').remove();
+            });
+        }
+
+        function deleteEvent(event) {
+            const localDate = new Date(event.start.getTime() - (event.start.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+            $.ajax({
+                url: '/AppointmentSchedule/DeleteEvent', // Adjust URL as per your controller route
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Title: event.title,
+                    Dates: localDate, // Format the date as YYYY-MM-DD
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        calendar.refetchEvents(); // Refresh the calendar
+                        location.reload(); // Refresh the page
+                        toastr.success('Event deleted successfully');
+
+                    } else {
+                        toastr.error('Failed to delete event');
+                    }
+                },
+                error: function () {
+                    toastr.error('Error occurred while deleting the event');
+                }
+            });
+        }
+
+        function saveEvent(event) {
+            // Convert the date to local time zone format (YYYY-MM-DD)
+            const localDate = new Date(event.start.getTime() - (event.start.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+            $.ajax({
+                url: '/AppointmentSchedule/SaveEvents',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Dates: localDate, // Use the local date
+                    Title: event.title
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        location.reload(); // Refresh the page
+                        toastr.success('Event saved successfully');
+
+                    } else {
+                        toastr.error('Failed to save event');
+                    }
+                },
+                error: function () {
+                    toastr.error('Error occurred while saving the event');
+                }
+            });
+        }
+
+        // Fetch clinic days from the server
+        function fetchClinicDays() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetClinicDays', // Adjust URL as per your controller route
+                type: 'GET'
+            });
+        }
+
+        // Initialize checkboxes for clinic days
+        function initializeCheckboxes(selectedDays) {
+            $('input[name="clinicDays"]').each(function () {
+                if (selectedDays.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                }
+            });
+        }
+
+        // Get event days based on selected clinic days
+        function getEventDays(selectedDays, startDate, endDate) {
+            var events = [];
+            var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+                // Check if the day is in the selected days and greater than today's date
+                if (selectedDays.includes(dayName) && d > new Date()) {
+                    events.push({
+                        title: 'OPEN',
+                        start: d.toISOString().split('T')[0],
+                        backgroundColor: 'green',
+                        borderColor: 'green',
+                        textColor: 'white'
+                    });
+                }
+            }
+
+            return events;
+        }
+
+
+        // Fetch existing events from the server
+        function fetchEventData() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetEvents', // URL of the action method
+                type: 'GET'
+            });
+        }
+
+        // Fetch clinic days and initialize the calendar
+        fetchClinicDays().then(days => {
+            selectedDays = days;
+            initializeCheckboxes(selectedDays);
+            updateCalendar(selectedDays);
+
+            // Update the calendar when clinic days are changed
+            $('input[name="clinicDays"]').change(function () {
+                var day = $(this).val();
+                if ($(this).is(':checked')) {
+                    selectedDays.push(day);
+                } else {
+                    selectedDays = selectedDays.filter(d => d !== day);
+                }
+                updateCalendar(selectedDays);
+
+                // Save updated days to the server
+                $.ajax({
+                    url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+                    type: 'POST',
+                    data: JSON.stringify(selectedDays),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log('Save response:', response);
+                        window.location.href = '/AppointmentSchedule/AppointmentOperation';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error saving data:', xhr, status, error);
+                        alert('Failed to save data. Please try again.');
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+<!---------------------ETO YUNG MAY CONTEXT MENU YUNG OPEN TITLE-------------------->
+@* <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let calendarEl = document.getElementById('calendar');
+        let selectedDays = [];
+        let calendar;
+
+        // Enable dragging for external events
+        new FullCalendar.Draggable(document.getElementById('external-events'), {
+            itemSelector: '.external-event',
+            eventData: function (eventEl) {
+                return {
+                    title: eventEl.innerText.trim()
+                };
+            }
+        });
+
+        // Initialize the calendar with events
+        function updateCalendar(selectedDays) {
+            var clinicEvents = getEventDays(selectedDays);
+
+            fetchEventData().then(serverEvents => {
+                // Combine clinicEvents and serverEvents, then filter them to prioritize "Half Day" and "Close"
+                var combinedEvents = clinicEvents.concat(serverEvents);
+
+                // Create an object to store events by date
+                var eventsByDate = {};
+
+                combinedEvents.forEach(event => {
+                    var eventDate = event.start;
+
+                    // If an event already exists for this date, prioritize "Close" > "Half Day" > others
+                    if (eventsByDate[eventDate]) {
+                        if (event.title.toLowerCase() === 'close' ||
+                            (event.title.toLowerCase() === 'half day' && eventsByDate[eventDate].title.toLowerCase() !== 'close')) {
+                            eventsByDate[eventDate] = event;
+                        }
+                    } else {
+                        eventsByDate[eventDate] = event;
+                    }
+                });
+
+                // Convert the object back into an array of events
+                var filteredEvents = Object.values(eventsByDate);
+
+                if (calendar) {
+                    calendar.destroy();
+                }
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                    },
+                    droppable: true,
+                    editable: true,
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        successCallback(filteredEvents);
+                    },
+                    eventReceive: function (info) {
+                        saveEvent(info.event);
+                    },
+                    eventDrop: function (info) {
+                        saveEvent(info.event);
+                    },
+                    eventContent: function (arg) {
+                        var bgColor;
+                        switch (arg.event.title.toLowerCase()) {
+                            case 'half day':
+                                bgColor = 'orange';
+                                break;
+                            case 'close':
+                                bgColor = 'red';
+                                break;
+                            default:
+                                bgColor = 'green';
+                        }
+                        return {
+                            html: `<div style="background-color: ${bgColor};">${arg.event.title}</div>`
+                        };
+                    },
+                    eventTextColor: 'white',
+                    eventDidMount: function (info) {
+                        $(info.el).contextmenu(function (event) {
+                            event.preventDefault();
+                            showContextMenu(event, info.event);
+                        });
+                    }
+                });
+
+                calendar.render();
+            });
+        }
+
+        function showContextMenu(event, calendarEvent) {
+            // Remove any existing context menu
+            $('#context-menu').remove();
+
+            var menuHtml = `<ul id="context-menu" class="ui-helper-hidden">
+                                <li id="delete-event">Delete Event</li>
+                            </ul>`;
+            $('body').append(menuHtml);
+
+            $('#context-menu').css({
+                top: event.pageY,
+                left: event.pageX
+            }).show();
+
+            $('#delete-event').click(function () {
+                deleteEvent(calendarEvent);
+                $('#context-menu').remove();
+            });
+
+            $(document).click(function () {
+                $('#context-menu').remove();
+            });
+        }
+
+        function deleteEvent(event) {
+            const localDate = new Date(event.start.getTime() - (event.start.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+            $.ajax({
+                url: '/AppointmentSchedule/DeleteEvent', // Adjust URL as per your controller route
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Title: event.title,
+                    Dates: localDate, // Format the date as YYYY-MM-DD
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Event deleted successfully');
+                        calendar.refetchEvents(); // Refresh the calendar
+                    } else {
+                        toastr.error('Failed to delete event');
+                    }
+                },
+                error: function () {
+                    toastr.error('Error occurred while deleting the event');
+                }
+            });
+        }
+        function saveEvent(event) {
+            // Convert the date to local time zone format (YYYY-MM-DD)
+            const localDate = new Date(event.start.getTime() - (event.start.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+            $.ajax({
+                url: '/AppointmentSchedule/SaveEvents',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    Dates: localDate, // Use the local date
+                    Title: event.title
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success('Event saved successfully');
+                    } else {
+                        toastr.error('Failed to save event');
+                    }
+                },
+                error: function () {
+                    toastr.error('Error occurred while saving the event');
+                }
+            });
+        }
+
+        // Fetch clinic days from the server
+        function fetchClinicDays() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetClinicDays', // Adjust URL as per your controller route
+                type: 'GET'
+            });
+        }
+
+        // Initialize checkboxes for clinic days
+        function initializeCheckboxes(selectedDays) {
+            $('input[name="clinicDays"]').each(function () {
+                if (selectedDays.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                }
+            });
+        }
+
+        // Get event days based on selected clinic days
+        function getEventDays(selectedDays) {
+            var events = [];
+            var today = new Date();
+            var startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            var endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            // Array of weekdays in the order they appear on the calendar
+            var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+                if (selectedDays.includes(dayName) && d > today) {
+                    events.push({
+                        title: 'Open',
+                        start: d.toISOString().split('T')[0],
+                        backgroundColor: 'green',
+                        borderColor: 'green',
+                        textColor: 'white'
+                    });
+                }
+            }
+            return events;
+        }
+
+        // Fetch existing events from the server
+        function fetchEventData() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetEvents', // URL of the action method
+                type: 'GET'
+            });
+        }
+
+        // Fetch clinic days and initialize the calendar
+        fetchClinicDays().then(days => {
+            selectedDays = days;
+            initializeCheckboxes(selectedDays);
+            updateCalendar(selectedDays);
+
+            // Update the calendar when clinic days are changed
+            $('input[name="clinicDays"]').change(function () {
+                var day = $(this).val();
+                if ($(this).is(':checked')) {
+                    selectedDays.push(day);
+                } else {
+                    selectedDays = selectedDays.filter(d => d !== day);
+                }
+                updateCalendar(selectedDays);
+
+                // Save updated days to the server
+                $.ajax({
+                    url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+                    type: 'POST',
+                    data: JSON.stringify(selectedDays),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log('Save response:', response);
+                        window.location.href = '/AppointmentSchedule/AppointmentOperation';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error saving data:', xhr, status, error);
+                        alert('Failed to save data. Please try again.');
+                    }
+                });
+            });
+        });
+    });
+
+</script>
+ *@
+
+
+
+
+
+
+
+
+@* <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var selectedDays = [];
+
+        function fetchClinicDays() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetClinicDays', // Adjust URL as per your controller route
+                type: 'GET'
+            });
+        }
+
+        function initializeCheckboxes(selectedDays) {
+            $('input[name="clinicDays"]').each(function () {
+                if (selectedDays.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                }
+            });
+        }
+
+        function getEventDays(selectedDays) {
+            var events = [];
+            var today = new Date();
+            var startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            var endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            // Array of weekdays in the order they appear on the calendar
+            var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+                if (selectedDays.includes(dayName) && d > today) {
+                    events.push({
+                        title: 'Open',
+                        start: d.toISOString().split('T')[0],
+                        backgroundColor: 'green',
+                        borderColor: 'green',
+                        textColor: 'white'
+                    });
+                }
+            }
+            return events;
+        }
+
+        function fetchEventData() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetEvents', // URL of the action method
+                type: 'GET'
+            });
+        }
+
+        function updateCalendar(selectedDays) {
+            var clinicEvents = getEventDays(selectedDays);
+
+            fetchEventData().then(serverEvents => {
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                    },
+                    events: function (fetchInfo, successCallback, failureCallback) {
+                        successCallback(clinicEvents.concat(serverEvents));
+                    },
+                    eventContent: function (arg) {
+                        return { html: `<div>${arg.event.title}</div>` };
+                    },
+                    eventTextColor: 'white'
+                });
+
+                calendar.render();
+            });
+        }
+
+        fetchClinicDays().then(days => {
+            selectedDays = days;
+            initializeCheckboxes(selectedDays);
+            updateCalendar(selectedDays);
+
+            $('input[name="clinicDays"]').change(function () {
+                var day = $(this).val();
+                if ($(this).is(':checked')) {
+                    selectedDays.push(day);
+                } else {
+                    selectedDays = selectedDays.filter(d => d !== day);
+                }
+                updateCalendar(selectedDays);
+
+                // Save updated days to the server
+                $.ajax({
+                    url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+                    type: 'POST',
+                    data: JSON.stringify(selectedDays),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log('Save response:', response);
+                        window.location.href = '/AppointmentSchedule/AppointmentOperation';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error saving data:', xhr, status, error);
+                        alert('Failed to save data. Please try again.');
+                    }
+                });
+            });
+        });
+    });
+</script> *@
+
+
+
+@* <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        new FullCalendar.Draggable(document.getElementById('external-events'), {
+            itemSelector: '.external-event',
+            eventData: function (eventEl) {
+                return {
+                    id: generateEventId(), // Generates a unique ID for the event
+                    title: eventEl.innerText.trim() // Sets the title of the event based on the element's text
+                };
+            }
+        });
+    });
+
+    function generateEventId() {
+        return String(new Date().getTime()); // Generates a unique ID using the current timestamp
+    }
+</script> *@
+
+
+
+
+
+<!-------With Database------->
+@* <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var selectedDays = [];
+
+        function fetchClinicDays() {
+            $.ajax({
+                url: '/AppointmentSchedule/GetClinicDays',
+                type: 'GET',
+                success: function (data) {
+                    console.log('Fetched clinic days:', data);
+                    selectedDays = data;
+                    initializeCheckboxes(selectedDays);
+                    updateCalendar(selectedDays);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching clinic days:', xhr, status, error);
+                }
+            });
+        }
+
+        function initializeCheckboxes(selectedDays) {
+            $('input[name="clinicDays"]').each(function () {
+                $(this).prop('checked', selectedDays.includes($(this).val()));
+            });
+        }
+
+        function getEventDays(selectedDays) {
+            var events = [];
+            var today = new Date();
+            var startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            var endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                var dayName = weekdays[d.getDay()];
+                var eventType = '';
+
+                if (selectedDays.includes(dayName) && d > today) {
+                    eventType = isHalfDay(d) ? 'Half Day' : isClosed(d) ? 'Close' : 'Open';
+
+                    events.push({
+                        title: eventType,
+                        start: d.toISOString().split('T')[0],
+                        extendedProps: { eventType: eventType }
+                    });
+                }
+            }
+            return events;
+        }
+
+        function isHalfDay(date) {
+            // Implement your logic to check if it's a half day
+            return false;
+        }
+
+        function isClosed(date) {
+            // Implement your logic to check if it's a closed day
+            return false;
+        }
+
+        function updateCalendar(selectedDays) {
+            $.ajax({
+                url: '/AppointmentSchedule/GetDraggableEvents',
+                type: 'GET',
+                success: function (dbEvents) {
+                    var events = getEventDays(selectedDays);
+
+                    dbEvents.forEach(function (event) {
+                        events.push({
+                            id: event.ID,
+                            title: event.Title,
+                            start: event.StartDate,
+                            extendedProps: { eventType: event.EventType }
+                        });
+                    });
+
+                    var calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                        },
+                        events: events,
+                        eventContent: function (arg) {
+                            return {
+                                html: `<div>${arg.event.title}</div>`
+                            };
+                        },
+                        eventClassNames: function (arg) {
+                            var classes = [];
+                            if (arg.event.extendedProps.eventType === 'Close') {
+                                classes.push('fc-close');
+                            } else if (arg.event.extendedProps.eventType === 'Half Day') {
+                                classes.push('fc-half-day');
+                            }
+                            return classes;
+                        },
+                        droppable: true,
+                        drop: function (info) {
+                            var event = {
+                                id: generateEventId(),
+                                title: info.draggedEl.innerText.trim(),
+                                start: info.dateStr
+                            };
+                            calendar.addEvent(event);
+                            saveEvent(event);
+                            if (document.getElementById('drop-remove').checked) {
+                                info.draggedEl.parentNode.removeChild(info.draggedEl);
+                                removeEvent(info.draggedEl.dataset.id);
+                            }
+                        }
+                    });
+                    calendar.render();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching events:', xhr, status, error);
+                    alert('Failed to load events. Please try again.');
+                }
+            });
+        }
+
+        function generateEventId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function saveEvent(event) {
+            console.log('Saving event:', event);
+            $.ajax({
+                url: '/AppointmentSchedule/SaveDraggableEvent',
+                type: 'POST',
+                data: JSON.stringify(event),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Event saved:', response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving event:', xhr, status, error);
+                    alert('Failed to save event. Please try again.');
+                }
+            });
+        }
+
+        function removeEvent(eventId) {
+            console.log('Removing event with ID:', eventId);
+            $.ajax({
+                url: '/AppointmentSchedule/RemoveDraggableEvent',
+                type: 'POST',
+                data: JSON.stringify({ id: eventId }),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Event removed:', response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error removing event:', xhr, status, error);
+                    alert('Failed to remove event. Please try again.');
+                }
+            });
+        }
+
+        function loadDraggableEvents() {
+            $.ajax({
+                url: '/AppointmentSchedule/GetDraggableEvents',
+                type: 'GET',
+                success: function (events) {
+                    console.log('Loaded draggable events:', events);
+                    events.forEach(function (event) {
+                        $('#external-events').append(
+                            `<div class="external-event m-15" data-id="${event.id}"><i class="fa fa-hand-o-right"></i> ${event.title}</div>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading draggable events:', xhr, status, error);
+                    alert('Failed to load draggable events. Please try again.');
+                }
+            });
+        }
+
+        fetchClinicDays();
+
+        $('input[name="clinicDays"]').change(function () {
+            var day = $(this).val();
+            if ($(this).is(':checked')) {
+                selectedDays.push(day);
+            } else {
+                selectedDays = selectedDays.filter(d => d !== day);
+            }
+            updateCalendar(selectedDays);
+
+            $.ajax({
+                url: '/AppointmentSchedule/SaveClinicDays',
+                type: 'POST',
+                data: JSON.stringify(selectedDays),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Save response:', response);
+                    window.location.href = '/AppointmentSchedule/AppointmentOperation';
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving data:', xhr, status, error);
+                    alert('Failed to save data. Please try again.');
+                }
+            });
+        });
+
+        new FullCalendar.Draggable(document.getElementById('external-events'), {
+            itemSelector: '.external-event',
+            eventData: function (eventEl) {
+                return {
+                    id: generateEventId(),
+                    title: eventEl.innerText.trim()
+                };
+            }
+        });
+
+        $('.save-category').on('click', function () {
+            var eventName = $('input[name="category-name"]').val().trim();
+            if (eventName) {
+                var newEvent = {
+                    id: generateEventId(),
+                    title: eventName
+                };
+                $('#external-events').append(
+                    `<div class="external-event m-15" data-id="${newEvent.id}"><i class="fa fa-hand-o-right"></i> ${eventName}</div>`
+                );
+                saveEvent(newEvent);
+            }
+        });
+
+        loadDraggableEvents();
+    });
+</script> *@
+@* 
+<style>
+    /* CSS for event types */
+    .fc-close {
+        background-color: red; /* Background color for closed days */
+        color: white;
+    }
+
+    .fc-half-day {
+        background-color: orange; /* Background color for half days */
+        color: white;
+    }
+</style> *@
+
+@* 
+<!-------With Database------->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var selectedDays = [];
+
+        function fetchClinicDays() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetClinicDays',
+                type: 'GET',
+                success: function (data) {
+                    console.log('Fetched clinic days:', data);
+                    selectedDays = data;
+                    initializeCheckboxes(selectedDays);
+                    updateCalendar(selectedDays);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching clinic days:', xhr, status, error);
+                }
+            });
+        }
+
+        function initializeCheckboxes(selectedDays) {
+            $('input[name="clinicDays"]').each(function () {
+                if (selectedDays.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                }
+            });
+        }
+
+        function getEventDays(selectedDays) {
+            var events = [];
+            var today = new Date();
+            var startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            var endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                var dayName = weekdays[d.getDay()];
+                var eventType = ''; // Default to empty
+
+                if (selectedDays.includes(dayName) && d > today) {
+                    // Determine the event type; replace this with your actual logic
+                    if (isHalfDay(d)) {
+                        eventType = 'Half Day';
+                    } else if (isClosed(d)) {
+                        eventType = 'Close';
+                    } else {
+                        eventType = 'Open'; // Default
+                    }
+
+                    events.push({
+                        title: eventType,
+                        start: d.toISOString().split('T')[0],
+                        extendedProps: { eventType: eventType } // Store additional data
+                    });
+                }
+            }
+            return events;
+        }
+
+        function isHalfDay(date) {
+            // Implement your logic to check if it's a half day
+            return false;
+        }
+
+        function isClosed(date) {
+            // Implement your logic to check if it's a closed day
+            return false;
+        }
+
+        function updateCalendar(selectedDays) {
+            var events = getEventDays(selectedDays);
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                },
+                events: events,
+                eventContent: function (arg) {
+                    return {
+                        html: `<div>${arg.event.title}</div>`
+                    };
+                },
+                eventClassNames: function (arg) {
+                    var classes = [];
+                    // Add specific classes based on event type
+                    if (arg.event.extendedProps.eventType === 'Close') {
+                        classes.push('fc-close');
+                    } else if (arg.event.extendedProps.eventType === 'Half Day') {
+                        classes.push('fc-half-day');
+                    }
+                    return classes;
+                },
+                droppable: true,
+                drop: function (info) {
+                    var event = {
+                        title: info.draggedEl.innerText.trim(),
+                        start: info.dateStr
+                    };
+                    calendar.addEvent(event);
+                    saveEvent(event);
+                    if (document.getElementById('drop-remove').checked) {
+                        info.draggedEl.parentNode.removeChild(info.draggedEl);
+                        removeEvent(info.draggedEl.dataset.id);
+                    }
+                }
+            });
+            calendar.render();
+        }
+
+        function generateEventId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function saveEvent(event) {
+            console.log('Saving event:', event);
+            $.ajax({
+                url: '/AppointmentSchedule/SaveDraggableEvent',
+                type: 'POST',
+                data: JSON.stringify(event),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Event saved:', response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving event:', xhr, status, error);
+                    alert('Failed to save event. Please try again.');
+                }
+            });
+        }
+
+        function removeEvent(eventId) {
+            console.log('Removing event with ID:', eventId);
+            $.ajax({
+                url: '/AppointmentSchedule/RemoveDraggableEvent',
+                type: 'POST',
+                data: JSON.stringify({ id: eventId }),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Event removed:', response);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error removing event:', xhr, status, error);
+                    alert('Failed to remove event. Please try again.');
+                }
+            });
+        }
+
+        function loadDraggableEvents() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetDraggableEvents',
+                type: 'GET',
+                success: function (events) {
+                    console.log('Loaded draggable events:', events);
+                    events.forEach(function (event) {
+                        $('#external-events').append(
+                            `<div class="external-event m-15" data-id="${event.id}"><i class="fa fa-hand-o-right"></i> ${event.title}</div>`
+                        );
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading draggable events:', xhr, status, error);
+                    alert('Failed to load draggable events. Please try again.');
+                }
+            });
+        }
+
+        fetchClinicDays();
+
+        $('input[name="clinicDays"]').change(function () {
+            var day = $(this).val();
+            if ($(this).is(':checked')) {
+                selectedDays.push(day);
+            } else {
+                selectedDays = selectedDays.filter(d => d !== day);
+            }
+            updateCalendar(selectedDays);
+
+            $.ajax({
+                url: '/AppointmentSchedule/SaveClinicDays',
+                type: 'POST',
+                data: JSON.stringify(selectedDays),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Save response:', response);
+                    window.location.href = '/AppointmentSchedule/AppointmentOperation';
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error saving data:', xhr, status, error);
+                    alert('Failed to save data. Please try again.');
+                }
+            });
+        });
+
+        new FullCalendar.Draggable(document.getElementById('external-events'), {
+            itemSelector: '.external-event',
+            eventData: function (eventEl) {
+                return {
+                    id: generateEventId(),
+                    title: eventEl.innerText.trim()
+                };
+            }
+        });
+
+        $('.save-category').on('click', function () {
+            var eventName = $('input[name="category-name"]').val().trim();
+            if (eventName) {
+                var newEvent = {
+                    id: generateEventId(),
+                    title: eventName
+                };
+                $('#external-events').append(
+                    `<div class="external-event m-15" data-id="${newEvent.id}"><i class="fa fa-hand-o-right"></i> ${eventName}</div>`
+                );
+                saveEvent(newEvent);
+            }
+        });
+
+        loadDraggableEvents();
+    });
+
+</script>
+
+<style>
+    /* CSS for event types */
+    .fc-close {
+        background-color: red; /* Background color for closed days */
+        color: white;
+    }
+
+    .fc-half-day {
+        background-color: orange; /* Background color for half days */
+        color: white;
+    }
+</style> *@
+
+<!-------With Database------->
+<script>
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     var calendarEl = document.getElementById('calendar');
+    //     var selectedDays = [];
+    //     var draggableEvents = [];
+
+    //     function fetchClinicDays() {
+    //         return $.ajax({
+    //             url: '/AppointmentSchedule/GetClinicDays', // Adjust URL as per your controller route
+    //             type: 'GET'
+    //         });
+    //     }
+
+    //     function initializeCheckboxes(selectedDays) {
+    //         $('input[name="clinicDays"]').each(function () {
+    //             if (selectedDays.includes($(this).val())) {
+    //                 $(this).prop('checked', true);
+    //             } else {
+    //                 $(this).prop('checked', false);
+    //             }
+    //         });
+    //     }
+
+    //     function getEventDays(selectedDays) {
+    //         var events = [];
+    //         var today = new Date();
+    //         var startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    //         var endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+    //         // Array of weekdays in the order they appear on the calendar
+    //         var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+    //         for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    //             var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+    //             if (selectedDays.includes(dayName) && d > today) {
+    //                 events.push({
+    //                     title: 'Open',
+    //                     start: d.toISOString().split('T')[0],
+    //                     backgroundColor: 'green',
+    //                     borderColor: 'green',
+    //                     textColor: 'white'
+    //                 });
+    //             }
+    //         }
+    //         return events;
+    //     }
+
+    //     // Function to update the calendar with new events
+    //     function updateCalendar(selectedDays) {
+    //         var events = getEventDays(selectedDays);
+    //         var calendar = new FullCalendar.Calendar(calendarEl, {
+    //             initialView: 'dayGridMonth',
+    //             headerToolbar: {
+    //                 left: 'prev,next today',
+    //                 center: 'title',
+    //                 right: 'dayGridMonth,dayGridWeek,dayGridDay'
+    //             },
+    //             events: events,
+    //             eventDisplay: 'block',
+    //             eventContent: function (arg) {
+    //                 return { html: `<div>${arg.event.title}</div>` };
+    //             },
+    //             eventTextColor: 'white',
+    //             // Add droppable functionality
+    //             droppable: true,
+    //             drop: function (info) {
+    //                 var event = {
+    //                     id: generateEventId(),
+    //                     title: info.draggedEl.innerText.trim(),
+    //                     start: info.dateStr,
+    //                     backgroundColor: info.draggedEl.dataset.class.split('-')[1],
+    //                     borderColor: info.draggedEl.dataset.class.split('-')[1],
+    //                     textColor: 'white'
+    //                 };
+    //                 calendar.addEvent(event);
+    //                 saveEvent(event);
+    //                 if (document.getElementById('drop-remove').checked) {
+    //                     info.draggedEl.parentNode.removeChild(info.draggedEl);
+    //                     removeEvent(info.draggedEl.dataset.id);
+    //                 }
+    //             }
+    //         });
+    //         calendar.render();
+    //     }
+
+    //     // Function to generate unique event ID
+    //     function generateEventId() {
+    //         return '_' + Math.random().toString(36).substr(2, 9);
+    //     }
+
+    //     // Function to save draggable event to the database
+    //     function saveEvent(event) {
+    //         $.ajax({
+    //             url: '/AppointmentSchedule/SaveDraggableEvent', // Adjust URL as per your controller route
+    //             type: 'POST',
+    //             data: JSON.stringify(event),
+    //             contentType: 'application/json',
+    //             success: function (response) {
+    //                 console.log('Event saved:', response);
+    //             },
+    //             error: function (xhr, status, error) {
+    //                 console.error('Error saving event:', xhr, status, error);
+    //                 alert('Failed to save event. Please try again.');
+    //             }
+    //         });
+    //     }
+
+    //     // Function to remove draggable event from the database
+    //     function removeEvent(eventId) {
+    //         $.ajax({
+    //             url: '/AppointmentSchedule/RemoveDraggableEvent', // Adjust URL as per your controller route
+    //             type: 'POST',
+    //             data: JSON.stringify({ id: eventId }),
+    //             contentType: 'application/json',
+    //             success: function (response) {
+    //                 console.log('Event removed:', response);
+    //             },
+    //             error: function (xhr, status, error) {
+    //                 console.error('Error removing event:', xhr, status, error);
+    //                 alert('Failed to remove event. Please try again.');
+    //             }
+    //         });
+    //     }
+
+    //     // Function to load draggable events from the database
+    //     function loadDraggableEvents() {
+    //         return $.ajax({
+    //             url: '/AppointmentSchedule/GetDraggableEvents', // Adjust URL as per your controller route
+    //             type: 'GET',
+    //             success: function (events) {
+    //                 events.forEach(function (event) {
+    //                     $('#external-events').append(
+    //                         `<div class="external-event m-15 bg-${event.backgroundColor}" data-class="bg-${event.backgroundColor}" data-id="${event.id}"><i class="fa fa-hand-o-right"></i> ${event.title}</div>`
+    //                     );
+    //                 });
+    //             },
+    //             error: function (xhr, status, error) {
+    //                 console.error('Error loading draggable events:', xhr, status, error);
+    //                 alert('Failed to load draggable events. Please try again.');
+    //             }
+    //         });
+    //     }
+
+    //     // Fetch clinic days, initialize checkboxes, and update calendar on load
+    //     fetchClinicDays().then(days => {
+    //         selectedDays = days;
+    //         initializeCheckboxes(selectedDays);
+    //         updateCalendar(selectedDays);
+    //     });
+
+    //     // Handle checkbox change events
+    //     $('input[name="clinicDays"]').change(function () {
+    //         var day = $(this).val();
+    //         if ($(this).is(':checked')) {
+    //             selectedDays.push(day);
+    //         } else {
+    //             selectedDays = selectedDays.filter(d => d !== day);
+    //         }
+    //         updateCalendar(selectedDays);
+
+    //         // Save updated days to the server
+    //         $.ajax({
+    //             url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+    //             type: 'POST',
+    //             data: JSON.stringify(selectedDays),
+    //             contentType: 'application/json',
+    //             success: function (response) {
+    //                 console.log('Save response:', response);
+    //                 window.location.href = '/AppointmentSchedule/AppointmentOperation';
+    //             },
+    //             error: function (xhr, status, error) {
+    //                 console.error('Error saving data:', xhr, status, error);
+    //                 alert('Failed to save data. Please try again.');
+    //             }
+    //         });
+    //     });
+
+    //     // Initialize external events for dragging
+    //     new FullCalendar.Draggable(document.getElementById('external-events'), {
+    //         itemSelector: '.external-event',
+    //         eventData: function (eventEl) {
+    //             return {
+    //                 id: generateEventId(),
+    //                 title: eventEl.innerText.trim(),
+    //                 backgroundColor: eventEl.dataset.class.split('-')[1],
+    //                 borderColor: eventEl.dataset.class.split('-')[1],
+    //                 textColor: 'white'
+    //             };
+    //         }
+    //     });
+
+    //     // Handle the modal save button click event
+    //     $('.save-category').on('click', function () {
+    //         var eventName = $('input[name="category-name"]').val().trim();
+    //         var eventColor = $('select[name="category-color"]').val();
+    //         if (eventName) {
+    //             var newEvent = {
+    //                 id: generateEventId(),
+    //                 title: eventName,
+    //                 backgroundColor: eventColor.split('-')[1],
+    //                 borderColor: eventColor.split('-')[1],
+    //                 textColor: 'white'
+    //             };
+    //             // Add the new event to the external-events container
+    //             $('#external-events').append(
+    //                 `<div class="external-event m-15 ${eventColor}" data-class="${eventColor}" data-id="${newEvent.id}"><i class="fa fa-hand-o-right"></i> ${eventName}</div>`
+    //             );
+    //             saveEvent(newEvent);
+    //         }
+    //     });
+
+    //     // Load draggable events on page load
+    //     loadDraggableEvents();
+    // });
+
+</script>
+
+
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
+@* 
+<!-------With Database------->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var selectedDays = [];
+
+        function fetchClinicDays() {
+            return $.ajax({
+                url: '/AppointmentSchedule/GetClinicDays', // Adjust URL as per your controller route
+                type: 'GET'
+            });
+        }
+
+        function initializeCheckboxes(selectedDays) {
+            $('input[name="clinicDays"]').each(function () {
+                if (selectedDays.includes($(this).val())) {
+                    $(this).prop('checked', true);
+                } else {
+                    $(this).prop('checked', false);
+                }
+            });
+        }
+
+        function getEventDays(selectedDays) {
+            var events = [];
+            var today = new Date();
+            var startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            var endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            // Array of weekdays in the order they appear on the calendar
+            var weekdays = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                var dayName = weekdays[d.getDay()]; // Get day name directly from the date object
+
+                if (selectedDays.includes(dayName) && d > today) {
+                    events.push({
+                        title: 'Open',
+                        start: d.toISOString().split('T')[0],
+                        backgroundColor: 'green',
+                        borderColor: 'green',
+                        textColor: 'white'
+                    });
+                }
+            }
+            return events;
+        }
+
+
+        function updateCalendar(selectedDays) {
+            var events = getEventDays(selectedDays);
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                },
+                events: events,
+                eventDisplay: 'block',
+                eventContent: function (arg) {
+                    return { html: `<div>${arg.event.title}</div>` };
+
+                },
+                eventTextColor: 'white'
+            });
+            calendar.render();
+        }
+
+        fetchClinicDays().then(days => {
+            selectedDays = days;
+            initializeCheckboxes(selectedDays);
+            updateCalendar(selectedDays);
+
+            $('input[name="clinicDays"]').change(function () {
+                var day = $(this).val();
+                if ($(this).is(':checked')) {
+                    selectedDays.push(day);
+                } else {
+                    selectedDays = selectedDays.filter(d => d !== day);
+                }
+                updateCalendar(selectedDays);
+
+                // Save updated days to the server
+                $.ajax({
+                    url: '/AppointmentSchedule/SaveClinicDays', // Adjust URL as per your controller route
+                    type: 'POST',
+                    data: JSON.stringify(selectedDays),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log('Save response:', response);
+                        window.location.href = '/AppointmentSchedule/AppointmentOperation';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error saving data:', xhr, status, error);
+                        alert('Failed to save data. Please try again.');
+                    }
+                });
+            });
+        });
+    });
+</script>
+ *@
+
+
+
+
+

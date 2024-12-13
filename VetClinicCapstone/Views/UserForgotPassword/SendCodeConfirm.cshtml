@@ -1,0 +1,94 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Account</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+
+        .recover-container {
+            max-width: 500px;
+            margin: 100px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .btn-primary {
+            background-color: #1877f2;
+            border-color: #1877f2;
+        }
+
+        .btn-secondary {
+            background-color: #f0f2f5;
+            color: black;
+        }
+
+        .btn-primary:hover {
+            background-color: #165cbe;
+        }
+
+        .text-secondary {
+            color: #606770;
+        }
+
+        .horizontal-divider {
+            border-top: 1px solid #ccd0d5;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-white bg-white">
+        <a class="navbar-brand" href="#">
+            <h3>
+                <span style="font-family: 'Times New Roman', serif;" class="text-danger">Urban </span>
+                <span style="font-family: 'Times New Roman', serif;" class="text-primary">Vet</span>
+                <span style="font-family: 'Times New Roman', serif;" class="text-dark">Animal Clinic</span>
+            </h3>
+        </a>
+
+    </nav>
+    <form asp-action="VerifyCode" asp-controller="ForgotPassword">
+    <div class="recover-container">
+        <h5 class="text-center mb-4">We'll send you a code to your email address</h5>
+        <div class="media mb-4">
+     
+            <div class="media-body">
+                @if (TempData["FirstnameStored"]!= null)
+                    {
+                    <h6 class="mt-0">@TempData["FirstnameStored"] @TempData["LastnameStored"]</h6>
+                        <input type="hidden" name="Firstname" value="@TempData["FirstnameStored"]" />
+                }
+                
+                <p class="text-secondary">user</p>
+                      @if (TempData["EmailStored"] != null)
+                    {
+                    <p class="mb-0">@TempData["EmailStored"]</p>
+                        <input type="hidden" name="Email" value="@TempData["EmailStored"]" />
+                    }
+                <small class="text-secondary">Not you?</small>
+             
+            </div>
+        </div>
+        <div class="horizontal-divider"></div>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </div>
+    </div>
+       </form>
+
+</body>
+</html>

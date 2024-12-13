@@ -1,0 +1,378 @@
+﻿
+@{
+    ViewData["Title"] = "DoctorDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+
+
+
+
+
+@model IEnumerable<dynamic>
+<div class="container-full">
+	<div class="content-header">
+		<div class="d-flex align-items-center">
+			<div class="mr-auto">
+				<h4 class="page-title">Dashboard</h4>
+			</div>
+
+		</div>
+	</div>
+
+	<section class="content">
+	<!-----Cards------->
+	<div class="row">
+		<div class="col-xl-6">
+			<div class="info-box pull-up">
+					<span class="info-box-icon bg-primary-light rounded-circle"><span class="mdi mdi-calendar-multiple"></span></span>
+
+				<div class="info-box-content text-right">
+						<span class="info-box-number">@ViewBag.Appointment <span>x</span></span>
+					<span class="info-box-text">Appointment Today</span>
+				</div>
+			</div>
+		</div>
+		<div class="col-xl-6">
+			<div class="info-box pull-up">
+					<span class="info-box-icon bg-primary-light rounded-circle"><span class="mdi mdi-paw"><span class="path1"></span><span class="path2"></span><span class="path3"></span></span></span>
+
+				<div class="info-box-content text-right">
+						<span class="info-box-number">@ViewBag.TotalPatientToday <span>x</span></span>
+					<span class="info-box-text">Patients Today</span>
+				</div>
+			</div>
+		</div>
+@* 		<div class="col-xl-4">
+			<div class="info-box pull-up">
+				<span class="info-box-icon bg-primary-light rounded-circle"><span class="icon-User"><span class="path1"></span><span class="path2"></span></span></span>
+
+				<div class="info-box-content text-right">
+					<span class="info-box-number">40k</span>
+					<span class="info-box-text">Average Visitor</span>
+				</div>
+			</div>
+		</div> *@
+	</div>
+
+	<!----Bar Chart------>
+	
+	@* <div class="col col-12 d-xl-flex flex-row">
+		<div class="box col-xl-6">
+
+				<div class="box-body">
+					<div id="calendar"></div>
+				</div>
+		</div>
+		<div class="box col-xl-6">
+			<div class="box-header with-border">
+				<h4 class="box-title">Animal Most Patient</h4>
+			</div>
+		<div>
+					<canvas id="doughnutChart" width="400" height="400"></canvas>
+		</div>
+		</div>
+
+	</div> *@
+
+		<div class="row">
+			<!-- Calendar Section -->
+			<div class="col-12 col-xl-6 mb-4">
+				<div class="box">
+					<div class="box-body">
+						<div id="calendar"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Animal Most Patient Section -->
+			<div class="col-12 col-xl-6">
+				<div class="box">
+					<div class="box-header with-border">
+						<h4 class="box-title">Animal Most Patient</h4>
+					</div>
+					<div class="box-body">
+						<canvas id="doughnutChart" width="400" height="400"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+				<div class="col-lg-12">
+				<div class="box">
+					<div class="box-body">
+						<canvas id="barchart" width="200" height="100"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+
+		</section>
+		<!-- /.box -->
+</div>
+
+<!-----------DOUGHNUT CHART SCRIPT-------------->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		var ctx = document.getElementById('doughnutChart').getContext('2d');
+		var chartData = {
+			labels: @Html.Raw(Json.Serialize(Model.Select(m => m.Species))),
+			datasets: [{
+				label: 'Top 3 Breeds',
+				data: @Html.Raw(Json.Serialize(Model.Select(m => m.Count))),
+				backgroundColor: [
+					'rgba(255, 99, 132, 0.2)',
+					//'rgba(54, 162, 235, 0.2)',
+					'rgba(255, 206, 86, 0.2)',
+					'rgba(75, 192, 192, 0.2)'
+				],
+				borderColor: [
+					'rgba(255, 99, 132, 1)',
+					//'rgba(54, 162, 235, 1)',
+					'rgba(255, 206, 86, 1)',
+					'rgba(75, 192, 192, 1)'
+				],
+				borderWidth: 1
+			}]
+		};
+
+		new Chart(ctx, {
+			type: 'doughnut',
+			data: chartData,
+			options: {
+				responsive: true,
+				plugins: {
+					legend: {
+						position: 'top',
+					},
+					title: {
+						display: true,
+						text: 'Top 3 Breeds'
+					}
+				}
+			}
+		});
+	});
+</script>
+
+<!-----------TOASTER SCRIPT-------------->
+<script>
+	$(document).ready(function () {
+	@if (TempData["SuccessMessage"] != null)
+	{
+		<text>
+				toastr.success('@TempData["SuccessMessage"]');
+		</text>
+	}
+
+	@if (TempData["ErrorMessage"] != null)
+	{
+		<text>
+				toastr.error('@TempData["ErrorMessage"]');
+		</text>
+	}
+			});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.min.js"></script>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		var calendarEl = document.getElementById('calendar');
+		var today = new Date();
+		today.setHours(0, 0, 0, 0); // Reset time to the start of the day
+
+		// Function to fetch holiday data
+		function fetchHolidays() {
+			return new Promise((resolve, reject) => {
+				var holidays = [
+					{ title: "New Year's Day", date: '2024-01-01' },
+					{ title: 'Maundy Thursday', date: '2024-03-28' }, // Example date, adjust for each year
+					{ title: 'Good Friday', date: '2024-03-29' }, // Example date, adjust for each year
+					{ title: 'Araw ng Kagitingan', date: '2024-04-09' },
+					{ title: 'Labor Day', date: '2024-05-01' },
+					{ title: 'Independence Day', date: '2024-06-12' },
+					{ title: 'National Heroes Day', date: '2024-08-26' }, // Last Monday of August for 2024
+					{ title: 'Bonifacio Day', date: '2024-11-30' },
+					{ title: 'Christmas Day', date: '2024-12-25' },
+					{ title: 'Rizal Day', date: '2024-12-30' }
+				];
+				resolve(holidays);
+			});
+		}
+
+		// Fetch appointment data
+		fetch('/api/api/getAppointments')
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				console.log('Data fetched successfully:', data);
+
+				// Process appointment data
+				var appointments = data
+					.filter(item => new Date(item.date) >= today) // Include today and future dates
+					.map(item => ({
+						title: item.count >= 10 ? `Full (${item.count})` : `Available (${item.count})`,
+						start: item.date,
+						backgroundColor: item.count >= 10 ? 'red' : 'green',
+						borderColor: item.count >= 10 ? 'red' : 'green',
+						textColor: 'white'
+					}));
+
+				// Fetch holiday data
+				return fetchHolidays().then(holidays => {
+					console.log('Holidays fetched successfully:', holidays);
+
+					// Process holiday data
+					var holidayEvents = holidays.map(holiday => ({
+						title: holiday.title,
+						start: holiday.date,
+						backgroundColor: 'blue',
+						borderColor: 'blue',
+						textColor: 'white'
+					}));
+
+					// Combine appointment events and holiday events
+					var events = appointments.concat(holidayEvents);
+
+					console.log('Combined events:', events);
+
+					// Initialize FullCalendar with events
+					var calendar = new FullCalendar.Calendar(calendarEl, {
+						initialView: 'dayGridMonth',
+						headerToolbar: {
+							left: 'prev,next today',
+							center: 'title',
+							right: 'dayGridMonth,dayGridWeek,dayGridDay'
+						},
+						events: events,
+						eventDisplay: 'block',
+						eventContent: function (arg) {
+							return { html: `<div>${arg.event.title}</div>` };
+						},
+						eventTextColor: 'white'
+					});
+
+					// Render calendar
+					calendar.render();
+				});
+			})
+			.catch(error => {
+				console.error('Error fetching data:', error);
+				alert('Failed to fetch data. Please try again later.');
+			});
+	});
+</script>
+
+<script>
+	// Fetch data from the server
+	fetch('/AdminDashboard/GetIllnessData')
+		.then(response => response.json())
+		.then(data => {
+			// Process the data
+			const labels = data.map(item => item.illnessName);
+			const cases = data.map(item => item.caseCount);
+
+			// Create the chart using Chart.js
+			const ctx = document.getElementById('barchart').getContext('2d');
+			const illnessChart = new Chart(ctx, {
+				type: 'bar', // Choose chart type: 'bar', 'doughnut', 'pie', etc.
+				data: {
+					labels: labels,
+					datasets: [{
+						label: 'Top 10 Diagnosis',
+						data: cases,
+						backgroundColor: [
+							'rgba(255, 99, 132, 0.2)',
+							'rgba(54, 162, 235, 0.2)',
+							'rgba(255, 206, 86, 0.2)',
+							'rgba(75, 192, 192, 0.2)',
+							'rgba(153, 102, 255, 0.2)'
+						],
+						borderColor: [
+							'rgba(255, 99, 132, 1)',
+							'rgba(54, 162, 235, 1)',
+							'rgba(255, 206, 86, 1)',
+							'rgba(75, 192, 192, 1)',
+							'rgba(153, 102, 255, 1)'
+						],
+						borderWidth: 1
+					}]
+				},
+				options: {
+					scales: {
+						y: {
+							beginAtZero: true
+						}
+					}
+				}
+			});
+		})
+		.catch(error => console.error('Error fetching data:', error));
+</script>
+
+@*  <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar');
+
+            fetch('/api/api/getAppointments')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data fetched successfully:', data);
+
+                    // Process data to format it for FullCalendar
+                    var events = data.map(item => ({
+                        title: item.count >= 20 ? 'Full' : 'Available',
+                        start: item.date, // Assuming 'date' is your date field in ISO format (e.g., '2024-07-01')
+                        backgroundColor: item.count >= 20 ? 'red' : 'green',
+                        borderColor: item.count >= 20 ? 'red' : 'green',
+                        textColor: 'white' // Set text color to white for better readability
+                    }));
+
+                    console.log('Processed events:', events);
+
+                    // Initialize FullCalendar with events
+                    var calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,dayGridWeek,dayGridDay'
+                        },
+					events: events,
+					eventDisplay: 'block', // Use 'block' to fit text inside date cells
+					eventContent: function (arg) {
+						return { html: `<div>${arg.event.title}</div>` };
+					},
+					eventTextColor: 'white', // Ensure text color is readable
+                    });
+
+                    // Render calendar
+                    calendar.render();
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    alert('Failed to fetch data. Please try again later.');
+                });
+        });
+    </script> *@

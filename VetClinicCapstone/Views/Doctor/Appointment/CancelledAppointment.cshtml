@@ -1,0 +1,57 @@
+﻿@{
+	Layout = "_Layout";
+}
+
+@using VetClinicCapstone.Models.ViewModel
+@model IEnumerable<JoinAppointPatientOwner>
+<div class="container-full">
+	<div class="content-header">
+		<div class="d-flex align-items-center">
+			<div class="mr-auto">
+				<h4 class="page-title">Appointment</h4>
+			</div>
+
+		</div>
+	</div>
+
+
+	<section class="content">
+		<div class="col-12">
+			<div class="box">
+				<div class="box-body">
+					<h4 class="box-title">Cancelled Appointment List</h4>
+					<div class="table-responsive">
+						<table class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<th class="bb-2">Owner Name</th>
+									<th class="bb-2">Pet Name</th>
+									<th class="bb-2">Service</th>
+									<th class="bb-2">Date</th>
+									<th class="bb-2">Time</th>
+									<th class="bb-2">Owner Contact</th>
+									<th class="bb-2">Owner Email</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model)
+								{
+									<tr>
+										<td>@item.OwnerTbls.Firstname @item.OwnerTbls.Lastname</td>
+										<td>@item.PatientTbls.PatientName</td>
+										<td>@item.ServiceTbls.ServiceName</td>
+										<td>@item.AppointmentTbls.Date.ToString("MMMM dd, yyyy")</td>
+										<td>@item.AppointmentTbls.Time</td>
+										<td>@item.OwnerTbls.Phone</td>
+										<td>@item.OwnerTbls.Email</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- /.box-body -->
+			</div>
+		</div>
+	</section>
+</div>

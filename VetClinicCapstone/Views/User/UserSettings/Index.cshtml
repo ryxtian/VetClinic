@@ -1,0 +1,195 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+@using VetClinicCapstone.Models.ViewModel
+@model UserAndOwnerViewModel
+
+<style>
+    .profile-header {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .profile-img {
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .profile-info h4 {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link.active {
+        font-weight: bold;
+    }
+
+    .card-header {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div class="profile-header d-flex align-items-center">
+                <div class="profile-img-container mr-3">
+                    <img src="~/images/preview/profilepic.png" alt="Profile Image" class="profile-img">
+                </div>
+                <div class="profile-info">
+                    <h4 class="mb-1">@Model.OwnerDetail.Firstname @Model.OwnerDetail.Lastname</h4>
+                    <p class="text-muted mb-1">@Model.OwnerDetail.Email</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <!-- Account Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Account Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (TempData["UpdateSettngs"] != null)
+                        {
+                            <div class="alert alert-success">
+                                @TempData["UpdateSettngs"]
+                            </div>
+                        }
+                        <form asp-action="UpdateEmailSettings">
+                            <input type="hidden" name="OwnerDetail.Owner_ID" class="form-control" value="@Model.OwnerDetail.Owner_ID">
+                            <div class="form-group row">
+                                <label for="inputEmail" class="col-sm-3 col-form-label">Email</label>
+                                <div class="col-sm-9">
+                                    <input type="email" name="OwnerDetail.Email" class="form-control" id="inputEmail" value="@Model.OwnerDetail.Email">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputPhone" class="col-sm-3 col-form-label">Phone</label>
+                                <div class="col-sm-9">
+                                    <input type="tel" name="OwnerDetail.Phone" class="form-control" id="inputPhone" maxlength="13" value="@Model.OwnerDetail.Phone">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Settings</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Password Change -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Change Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Display TempData messages -->
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                @TempData["Error"]
+                            </div>
+                        }
+                        @if (TempData["NewAndConPass"] != null)
+                        {
+                            <div class="alert alert-danger">
+                                @TempData["NewAndConPass"]
+                            </div>
+                        }
+                        @if (TempData["Success"] != null)
+                        {
+                            <div class="alert alert-success">
+                                @TempData["Success"]
+                            </div>
+                        }
+  
+
+                        <form asp-action="ChangePassword" method="post" id="changePasswordForm">
+                            <div class="col-sm-9">
+                                <input type="hidden" name="User_ID" value="@Model.UserDetail.User_ID" />
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputCurrentPassword" class="col-sm-3 col-form-label">Current Password</label>
+                                <div class="col-sm-9">
+                                    <input type="password" class="form-control" id="inputCurrentPassword" name="CurrentPassword" placeholder="Enter current password" required />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputNewPassword" class="col-sm-3 col-form-label">New Password</label>
+                                <div class="col-sm-9">
+                                    <input type="password" class="form-control" id="inputNewPassword" name="NewPassword" placeholder="Enter new password" required />
+                                    <small id="passwordError" class="text-danger" style="display:none;">Password must be greater than 6 characters.</small>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputConfirmPassword" class="col-sm-3 col-form-label">Confirm New Password</label>
+                                <div class="col-sm-9">
+                                    <input type="password" class="form-control" id="inputConfirmPassword" name="ConfirmPassword" placeholder="Confirm new password" required />
+                                    <small id="confirmPasswordError" class="text-danger" style="display:none;">Passwords do not match.</small>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Change Password</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+    // Function to format phone number dynamically
+    function formatPhoneNumber() {
+        let phoneNumberInput = document.getElementById('inputPhone');
+        let phoneNumber = phoneNumberInput.value.replace(/\D/g, ''); // Remove non-numeric characters
+        let formattedPhoneNumber = '';
+
+        // Check if the phone number starts with 0 or 63
+        if (phoneNumber.startsWith('0')) {
+            formattedPhoneNumber = phoneNumber.replace(/(\d{4})(\d{3})(\d{4})/, '$1-$2-$3'); // Format as 0XXX-XXX-XXXX else {
+        }
+
+        // Update the input value with the formatted phone number
+        phoneNumberInput.value = formattedPhoneNumber;
+    }
+
+    // Attach event listener to input field to format phone number dynamically
+    document.getElementById('inputPhone').addEventListener('input', formatPhoneNumber);
+</script>
+<script>
+    document.getElementById("changePasswordForm").addEventListener("submit", function (event) {
+        // Get the password fields
+        var newPassword = document.getElementById("inputNewPassword").value;
+        var confirmPassword = document.getElementById("inputConfirmPassword").value;
+
+        // Get the error message elements
+        var passwordError = document.getElementById("passwordError");
+        var confirmPasswordError = document.getElementById("confirmPasswordError");
+
+        var isValid = true;
+
+        // Validate password length
+        if (newPassword.length <= 6) {
+            passwordError.style.display = "block";
+            isValid = false;
+        } else {
+            passwordError.style.display = "none";
+        }
+
+        // Validate password confirmation
+        if (newPassword !== confirmPassword) {
+            confirmPasswordError.style.display = "block";
+            isValid = false;
+        } else {
+            confirmPasswordError.style.display = "none";
+        }
+
+        // Prevent form submission if there are validation errors
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+</script>

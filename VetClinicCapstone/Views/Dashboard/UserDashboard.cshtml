@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "View";
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+
+<!-- Navigation Bar -->
+
+<div class="container-fluid">
+
+    <section class="content">
+        <div class="box">
+            <div class="box-body">
+                <div class="row">
+                    <!-- Main Content -->
+                    <main role="main" class="col-md-9 ml-sm-auto col-lg-12 px-4">
+                        <h1 class="my-4">Welcome to the Vet Clinic</h1>
+                        <div class="row">
+                            <div class="col-md-7 pb-50">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <h4 class="mb-0">Upcoming Appointments</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        @if (ViewBag.UpcomingAppointments != null && ((IEnumerable<dynamic>)ViewBag.UpcomingAppointments).Any())
+                                        {
+                                            <div class="list-group">
+                                                @foreach (var item in ViewBag.UpcomingAppointments)
+                                                {
+                                                    <div class="list-group-item list-group-item-action bg-light mb-2">
+                                                        <h5 class="mb-1">Appointment Date: @item.a.Date.ToString("MMMM dd, yyyy")</h5>
+                                                        <p class="mb-1"><strong>Time:</strong> @item.a.Time</p>
+                                                        <p class="mb-1"><strong>Pet Name:</strong> @item.p.PatientName</p>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="alert alert-info" role="alert">
+                                                No upcoming appointments.
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                           
+                            <div class="col-md-5">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-success text-white">
+                                        <h4 class="mb-0">Find Us Here</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="embed-responsive embed-responsive-16by9">
+                                            <iframe class="embed-responsive-item"
+                                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3720.0675733178427!2d121.2005976!3d13.7932034!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33bd17f0ad8159bf%3A0x7413b60073d9e773!2sURBAN+VET+Animal+Clinic!5e0!3m2!1sen!2sph!4v1695864119291!5m2!1sen!2sph"
+                                                    width="100%" height="300" allowfullscreen="" loading="lazy"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- More content can be added here -->
+                    </main>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

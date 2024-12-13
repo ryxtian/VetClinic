@@ -1,0 +1,313 @@
+﻿@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="icon" href="~/images/urvan-removebg-preview.png">
+
+	<title>Urban Vet Animal Clinic</title>
+
+	<!-- Vendors Style-->
+	<link rel="stylesheet" href="~/assets/css/vendors_css.css">
+
+	<!-- Style-->
+	<link rel="stylesheet" href="~/assets/css/style.css">
+	<link rel="stylesheet" href="~/assets/css/skin_color.css">
+
+	<!------Sweet Alert------>
+	<link href="~/assets/sweet-alert/sweet-alert.css" rel="stylesheet" />
+	<script src="~/assets/sweet-alert/sweet-alert-bundle-min.js"></script>
+	<script src="~/assets/sweet-alert/sweetalert-jquery.js"></script>
+
+
+</head>
+<body class="hold-transition light-skin sidebar-mini theme-primary fixed">
+
+	<div class="wrapper">
+
+		<header class="main-header">
+			<div class="d-flex align-items-center logo-box justify-content-center">
+				<!-- Logo -->
+				<a href="index.html" class="logo">
+					<!-- logo-->
+					@* <div class="logo-mini">
+					<span class="light-logo"><img src="~/images/logo-light.png" alt="logo"></span>
+					<span class="dark-logo"><img src="~/images/logo-dark.png" alt="logo"></span>
+					</div>
+					<!-- logo-->
+					<div class="logo-lg">
+					<span class="light-logo"><img src="~/images/logo-light-text.png" alt="logo"></span>
+					<span class="dark-logo"><img src="~/images/logo-dark-text.png" alt="logo"></span>
+					</div> *@
+				</a>
+			</div>
+			<!-- Header Navbar -->
+			<nav class="navbar navbar-static-top pl-10">
+				<!-- Sidebar toggle button-->
+				<div class="app-menu">
+					<ul class="header-megamenu nav">
+						<li class="btn-group nav-item">
+							<a href="#" class="waves-effect waves-light nav-link rounded push-btn" data-toggle="push-menu" role="button">
+								<span class="icon-Align-left"><span class="path1"></span><span class="path2"></span><span class="path3"></span></span>
+							</a>
+							<h3 style="font-family: 'Times New Roman', sans-serif;">
+								<span class="text-danger">Urvan </span>
+								<span class="text-primary">Vet</span>
+								<span>Animal Clinic</span>
+							</h3>
+
+						</li>
+					</ul>
+				</div>
+
+				<div class="navbar-custom-menu r-side">
+					<ul class="nav navbar-nav">
+
+						<!-- User Account-->
+						<li class="dropdown user user-menu">
+
+							<p class="pt-20 pr-10">Welcome, @User.Identity.Name!</p>
+						</li>
+
+						<li class="dropdown user user-menu">
+							<a href="#" class="waves-effect waves-light dropdown-toggle" data-toggle="dropdown" title="User">
+								<i class="icon-User"><span class="path1"></span><span class="path2"></span></i>
+							</a>
+							<ul class="dropdown-menu animated flipInX">
+								<li class="user-body">
+@* 									<a class="dropdown-item" href="#"><i class="ti-user text-muted mr-2"></i> Profile</a>
+									<a class="dropdown-item" href="#"><i class="ti-settings text-muted mr-2"></i> Settings</a> *@
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="@Url.Action("Logout","AdminLogin")"><i class="ti-lock text-muted mr-2"></i> Logout</a>
+								</li>
+							</ul>
+
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</header>
+
+		<!-- Left side column. contains the logo and sidebar -->
+		<aside class="main-sidebar">
+			<!-- sidebar-->
+			<section class="sidebar">
+
+				<!-- sidebar menu-->
+				<ul class="sidebar-menu" data-widget="tree">
+					<li class="header">Menu </li>
+
+					<li>
+						<a href="@Url.Action("Index","AdminDashboard")">
+							<i class="mdi mdi-home-variant"><span class="path1"></span><span class="path2"></span></i>
+							<span>Dashboard</span>
+						</a>
+					</li>
+
+
+
+					@* 					<li class="header">Doctor </li> *@
+					@* 					<li>
+					<a href="@Url.Action("List","Patient")">
+					<i class="mdi mdi-account-multiple-outline"><span class="path1"></span><span class="path2"></span></i>
+					<span>Owner</span>
+					</a>
+					</li> *@
+					<li>
+						<a href="@Url.Action("List","Patient")">
+							<i class="mdi mdi-paw"><span class="path1"></span><span class="path2"></span></i>
+							<span>Patient</span>
+						</a>
+					</li>
+					<li class="treeview">
+						<a href="#">
+							<i class="mdi mdi-calendar-multiple-check"><span class="path1"></span><span class="path2"></span></i>
+							<span>Appointment</span>
+							<span class="pull-right-container">
+								<i class="fa fa-angle-right pull-right"></i>
+								<span id="appointment-count" class="label label-danger" style="display:none;"></span>
+							</span>
+						</a>
+						<ul class="treeview-menu">
+							<li><a href="@Url.Action("TodayAppointmentList","Appointment")"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Today Schedule</a></li>
+							<li><a href="@Url.Action("AppointmentList","Appointment")"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Appointment List</a></li>
+							<li><a href="@Url.Action("AppointmentForApproveList","Appointment")" onclick="markAppointmentsAsViewed()"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>For Approval</a></li>
+							<li><a href="@Url.Action("CancelledAppointment","Appointment")"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Cancelled</a></li>
+						</ul>
+					</li>
+
+
+
+					@* 					<li class="header">Staff </li> *@
+
+
+					<li>
+						<a href="@Url.Action("AppointmentOperation","AppointmentSchedule")">
+							<i class="mdi mdi-clock-fast"><span class="path1"></span><span class="path2"></span></i>
+							<span>Appointment Schedule</span>
+						</a>
+					</li>
+										<li>
+						<a href="@Url.Action("Index","MakeAnAppointment")">
+							<i class="mdi mdi-calendar-plus"><span class="path1"></span><span class="path2"></span></i>
+							<span>Make an Appointment</span>
+						</a>
+					</li>
+					<li class="header">Report </li>
+					<li class="treeview">
+						<a href="#">
+							<i class="mdi mdi-cloud-print"><span class="path1"></span><span class="path2"></span></i>
+							<span>Reports</span>
+							<span class="pull-right-container">
+								<i class="fa fa-angle-right pull-right"></i>
+							</span>
+						</a>
+						<ul class="treeview-menu">
+							<li><a href="@Url.Action("GenerateReport", "Report", new { reportType = "patient" })"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Patient Report</a></li>
+							<li><a href="@Url.Action("GenerateAppointmentReport", "Report", new { reportType = "appointment" })"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Appointment Report</a></li>
+							<li><a href="@Url.Action("GenerateConsultationReport", "Report", new { reportType = "consultation" })"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Consultation Report</a></li>
+
+							@*<li><a href="@Url.Action("GenerateReport", "Report", new { reportType = "yearly" })"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Yearly</a></li> *@
+
+						</ul>
+					</li>
+						<li>
+							<a href="@Url.Action("Index","Services")">
+							<i class="mdi mdi-ambulance"><span class="path1"></span><span class="path2"></span></i>
+								<span>Services</span>
+							</a>
+						</li>
+					
+					@if (User.IsInRole("Staff"))
+					{
+						<li class="header">Security</li>
+						<li>
+							<a href="@Url.Action("Index","UserAccount")">
+								<i class="mdi mdi-account-card-details"><span class="path1"></span><span class="path2"></span></i>
+								<span>User Account</span>
+							</a>
+						</li>
+					}
+					@{
+						// Retrieve the user's NameIdentifier claim
+						var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+					}
+					@if (userIdClaim == "4" || userIdClaim == "8") // Replace "desiredLoginID" with the actual ID you want to check
+					{
+						<li class="header">Security</li>
+						<li>
+							<a href="@Url.Action("Index","StaffAccount")">
+								<i class="mdi mdi-account-plus"><span class="path1"></span><span class="path2"></span></i>
+								<span>Sfaff Account</span>
+							</a>
+						</li>
+					}
+				</ul>
+			</section>
+
+		</aside>
+
+		<!-- Content Wrapper. Contains page content -->
+
+
+
+		<div class="content-wrapper">
+			@RenderBody()
+		</div>
+		<!-- /.content-wrapper -->
+
+		<footer class="main-footer">
+			&copy; 2024 Urban Vet Animal Clinic. All Rights Reserved.
+		</footer>
+	</div>
+	<!-- ./wrapper -->
+	<!-- Vendor JS -->
+	<script src="~/assets/js/vendors.min.js"></script>
+	<script src="~/assets//icons/feather-icons/feather.min.js"></script>
+
+
+
+
+@* 	<script src="~/assets/vendor_components/Flot/jquery.flot.js"></script>
+	<script src="~/assets/vendor_components/Flot/jquery.flot.resize.js"></script>
+	<script src="~/assets/vendor_components/Flot/jquery.flot.pie.js"></script>
+	<script src="~/assets/vendor_components/Flot/jquery.flot.categories.js"></script> *@
+
+
+
+	<!-- Adnix Admin App -->
+
+	@* <script src="~/assets/vendor_components/chart.js-master/Chart.min.js"></script> *@
+
+
+
+
+	<!---Data Tables----->
+	<script src="~/assets/vendor_components/datatable/datatables.min.js"></script>
+
+
+	<!---Picture Profile pet----->
+	<script src="~/assets/vendor_components/jvectormap/lib2/jquery-jvectormap-2.0.2.min.js"></script>
+	<script src="~/assets/vendor_components/jvectormap/lib2/jquery-jvectormap-world-mill-en.js"></script>
+	<script src="~/assets/vendor_components/jvectormap/lib2/jquery-jvectormap-in-mill.js"></script>
+	<script src="~/assets/vendor_components/jvectormap/lib2/jquery-jvectormap-us-aea-en.js"></script>
+	<script src="~/assets/vendor_components/jvectormap/lib2/jquery-jvectormap-uk-mill-en.js"></script>
+	<script src="~/assets/vendor_components/jvectormap/lib2/jquery-jvectormap-au-mill.js"></script>
+	<script src="~/assets/vendor_components/jvectormap/lib2/jvectormap.custom.js"></script>
+
+
+	<script src="~/assets/js/template.js"></script>
+
+
+	<script src="~/assets/js/pages/data-table.js"></script>
+
+
+
+
+
+	<script>
+		// Function to check new appointment count
+		function checkNewAppointments() {
+			$.ajax({
+				url: '@Url.Action("GetNewAppointmentCount", "Appointment")',
+				type: 'GET',
+				success: function (response) {
+					if (response.count > 0) {
+						$('#appointment-count').text(response.count).show();
+						if (response.count > 9) {
+							$('#appointment-count').text('9+');
+						}
+					} else {
+						$('#appointment-count').hide();
+					}
+				}
+			});
+		}
+
+		// Function to mark appointments as viewed
+		function markAppointmentsAsViewed() {
+			$.ajax({
+				url: '@Url.Action("MarkAppointmentsAsViewed", "Appointment")',
+				type: 'GET',
+				success: function (response) {
+					if (response.success) {
+						$('#appointment-count').hide();
+					}
+				}
+			});
+		}
+
+		// Run initial check
+		$(document).ready(function () {
+			checkNewAppointments(); // Initial check on page load
+
+			// Set interval for real-time checking every 60 seconds
+			setInterval(checkNewAppointments, 10000); // 10000 ms = 10 seconds
+		});
+	</script>
+</body>
+</html>

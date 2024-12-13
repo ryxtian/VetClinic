@@ -1,0 +1,141 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using VetClinicCapstone.Models.ViewModel
+@model ReportConsultationViewModel
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+<link href="~/assets/css/generate-report.css" rel="stylesheet" />
+<div class="container-full">
+    <section class="content">
+        <div class="col-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-4 text-center">
+                            <img src="~/images/urvan-removebg-preview.png" class="img-fluid w-120" alt="Clinic Logo" />
+                        </div>
+                        <div class="col-12 col-md-8 d-lg-flex align-items-start justify-content-start">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <h2 class="font-weight-bold text-dark" style="margin: 0; padding: 0;">Urban Vet Animal Clinic</h2>
+                                <p class="text-dark" style="margin: 0; padding: 0;">Dio Commercial Complex</p>
+                                <p class="text-dark" style="margin: 0; padding: 0;">Mabayabas Taysan Batangas</p>
+                                <p class="text-dark" style="margin: 0; padding: 0;">+63-915-057-8906</p>
+                                <p class="text-dark" style="margin: 0; padding: 0;">urvanvetanimalclinic@gmail.com</p>
+                            </div>
+                        </div>
+
+                    </div>
+                    <hr>
+                    <h2 class="text-center text-dark">CONSULTATION REPORT</h2>
+                    <div class="row pb-50">
+                        <div class="col-lg-6 pt-50">
+                            <p class="text-start text-dark">Report Period: @Model.StartDate.ToString("MMMM dd, yyyy") - @Model.EndDate.ToString("MMMM dd, yyyy")</p>
+                            <p class="text-start text-dark">Report Date: @Model.ReportDate.ToString("MMMM dd, yyyy h:mm tt")</p>
+                            <p class="text-start text-dark">Total Patients: @Model.TotalConsulted</p>
+                        </div>
+                        <div class="col-lg-6">
+                            <form method="get" action="@Url.Action("GenerateConsultationReport", "Report")" class="no-print">
+                                <div class="justify-content-start">
+                                    <div class="form-group">
+                                        <input type="hidden" name="reportType" value="@Model.ReportType" />
+
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <label for="startDate" class="form-label">Start Date:</label>
+                                                <input type="date" id="startDate" name="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label for="endDate" class="form-label">End Date:</label>
+                                                <input type="date" id="endDate" name="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" id="generate" class="btn btn-success mt-3 pull-right">Generate Report</button>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+
+
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Pet Name</th>
+                                    <th>Findings</th>
+                                    <th>Treatment</th>
+                                    <th>Date</th>
+                                    <th>Service</th>
+                                    <th>Owner Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var patient in Model.JoinAppointPatientOwnerViewModels)
+                                {
+                                    <tr>
+                                        <td>@patient.PatientTbls.PatientName</td>
+                                        <td>@patient.ConsultationTbls.Diagnosis</td>
+                                        <td>@patient.TreatmentTbls?.TreatmentType</td>
+                                        <td>@patient.ConsultationTbls.ConsultationDate.ToString("MMMM dd, yyyy")</td>
+                                        <td>@patient.ServiceTbls.ServiceName</td>
+                                        <td>@patient.OwnerTbls.Firstname @patient.OwnerTbls.Lastname</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="#" id="printButton" class="no-print btn btn-warning btn-sm float-right mt-2" onclick="window.print()">Print Report</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["InvalidDateReport"] != null)
+    {
+        <text>
+                toastr.error('@TempData["InvalidDateReport"]');
+        </text>
+    }
+
+                                                        });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+    $(document).ready(function () {
+        function checkDates() {
+            var startDate = new Date(document.getElementById("startDate").value);
+            var endDate = new Date(document.getElementById("endDate").value);
+            var generateButton = $('#printButton'); // Wrap with jQuery
+
+            if (startDate > endDate) {
+                generateButton.addClass('d-none');
+                return false; // Dates are invalid
+            } else {
+                generateButton.removeClass('d-none');
+                return true; // Dates are valid
+            }
+        }
+
+        // Check dates on page load
+        checkDates();
+
+        // Check dates on change of startDate and endDate
+        $('#startDate, #endDate').on('change', checkDates);
+
+        // Check dates on form submit
+        $('form').on('submit', function (e) {
+            if (!checkDates()) {
+                e.preventDefault(); // Prevent form submission if dates are invalid
+                toastr.error('Start date cannot be greater than end date.');
+            }
+        });
+    });
+</script>

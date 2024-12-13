@@ -1,0 +1,103 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="icon" href="~/images/urvan-removebg-preview.png">
+
+	<title>Urban Vet Admin - Log in </title>
+
+	<!-- Vendors Style-->
+	<link rel="stylesheet" href="~/assets/css/vendors_css.css">
+
+	<!-- Style-->
+	<link rel="stylesheet" href="~/assets/css/style.css">
+	<link rel="stylesheet" href="~/assets/css/skin_color.css">
+
+</head>
+
+<body>
+
+	<div class="container h-p100">
+		<div class="row align-items-center justify-content-md-center h-p70">
+
+			<div class="col-12">
+				<div class="row justify-content-center no-gutters">
+					<div class="col-lg-5 col-md-5 col-12">
+						<div class="bg-white rounded30 shadow-lg">
+							<div class="content-top-agile p-20 pb-0">
+								
+								<div class="container m-0 p-0">
+									<div class="row">
+										<div class="col-md-4 d-flex justify-content-center">
+											<img src="~/images/urbanvetlogo.jpg" class="w-75 p-0 m-0" alt="Round Image">
+										</div>
+									</div>
+									<h2 class="text-primary"><span class="text-danger">Urban</span> <span class="text-primary">Vet</span> <span class="text-dark">Animal Clinic</span></h2>
+									<p class="mb-0">Welcome Admin!</p>
+									@if (ViewBag.Error != null)
+									{
+										<div class="alert alert-danger mt-3 text-danger">
+											@ViewBag.Error
+										</div>
+									}
+								</div>
+
+
+							</div>
+							<div class="p-40">
+								<form action="../AdminLogin/Login" method="post">
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text bg-transparent"><i class="ti-user"></i></span>
+											</div>
+											<input name="Username" id="Username" type="text" class="form-control pl-15 bg-transparent" placeholder="Username">
+										</div>
+									</div>
+									<div class="form-group">
+										<div class="input-group mb-3">
+											<div class="input-group-prepend">
+												<span class="input-group-text  bg-transparent"><i class="ti-lock"></i></span>
+											</div>
+											<input  name="Password" id="Password"  type="password" class="form-control pl-15 bg-transparent" placeholder="Password">
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-12">
+											<div class="fog-pwd text-right">
+												@* <a href="javascript:void(0)" class="hover-warning"><i class="ion ion-locked"></i> Forgot password?</a><br> *@
+											</div>
+										</div>
+										<!-- /.col -->
+										<div class="col-12 text-center">
+											<button type="submit" class="btn btn-danger mt-10">Login</button>
+										</div>
+										<!-- /.col -->
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- Vendor JS -->
+	<script src="~/assets/js/vendors.min.js"></script>
+	<script src="~/assets/js/pages/chat-popup.js"></script>
+	<script src="~/assets/icons/feather-icons/feather.min.js"></script>
+
+
+</body>
+</html>

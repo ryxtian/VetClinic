@@ -1,0 +1,282 @@
+/*@media print {
+    .no-print {
+        display: none;
+    }
+
+    @page {
+        size: 8.5in 11in;*/ /* Size of the prescription paper */
+        /*margin: 0.5in;*/ /* Adjust margins as needed */
+    /*}
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .container-full {
+        width: 100%;
+        height: 100%;
+        padding: 1em;
+        box-sizing: border-box;
+    }
+
+    .box {
+        border: 1px solid #000;
+        padding: 1em;
+        width: 100%;
+        box-sizing: border-box;
+        background: #fff;
+    }
+
+    .box-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 1em;
+        padding-bottom: 0.5em;
+        text-align: center;
+        position: relative;
+    }
+
+    .box-title {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .logo {
+        width: 120px;*/ /* Adjust logo size */
+        /*height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .rx-symbol {
+        font-size: 48px;
+        font-weight: bold;
+        color: #007bff;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        text-align: center;
+        width: 100px;
+        height: 100px;
+    }
+
+    .box-body {
+        padding: 0;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #f2f2f2;
+        }
+
+    .no-print {
+        display: none;*/ /* Hide the print button during printing */
+    /*}
+}*/
+
+/* Styles for screen */
+/*.box {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.box-header {
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+.box-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.btn-warning {
+    margin-top: 10px;
+}*/
+
+
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.prescription {
+    width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border: 2px solid #000;
+    position: relative;
+    height: 800px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.logo-container {
+    width: 100px;
+    height: 100px;
+    background-image: url('dog-cat-icon.png'); /* Replace with actual image path */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.logo {
+    width: 125px;
+    height: 125px;
+}
+
+.date {
+    text-align: right;
+    font-size: 16px;
+}
+
+.patient-info {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+    .patient-info label {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+.species {
+    margin-top: 10px;
+}
+
+    .species label {
+        margin-right: 5px;
+    }
+
+.prescription-details {
+    margin-bottom: 30px;
+    font-size: 18px;
+}
+
+.rx-symbol {
+    font-size: 48px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.footer {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+}
+
+.signature {
+    text-align: right;
+    margin-bottom: 20px;
+}
+
+.signature-line {
+    border-top: 1px solid #000;
+    display: inline-block;
+    margin-bottom: 5px;
+    width: 250px;
+    padding-top: 5px;
+}
+
+.watermark {
+    text-align: center;
+    font-size: 96px;
+    color: #ccc;
+    opacity: 0.3;
+    margin-bottom: 20px;
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Comic Sans MS', cursive;
+}
+
+.clinic-info {
+    text-align: left;
+    font-size: 12px;
+}
+
+    .clinic-info h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .prescription {
+        width: 8.5in; /* Width of short bond paper */
+        height: 11in; /* Height of short bond paper */
+        padding:20px;
+        border: 2px solid #000;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        page-break-inside: avoid; /* Ensure the prescription isn't split across pages */
+    }
+
+    .header, .patient-info, .prescription-details, .footer {
+        page-break-inside: avoid; /* Prevent sections from being split across pages */
+    }
+
+    .watermark {
+        font-size: 72px; /* Adjusted size for printing */
+        opacity: 0.1; /* Lighten the watermark further for printing */
+    }
+    /*@page {
+        size: 5.5in 8.5in;*/ /* Set to prescription size: half of an A4 sheet */
+        /*margin: 0.5in;*/ /* Adjust margins as needed */
+    /*}*/
+
+}
+
+.print-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+    .print-button:hover {
+        background-color: #0056b3;
+    }
+
+@media print {
+    .print-button {
+        display: none;
+    }
+}

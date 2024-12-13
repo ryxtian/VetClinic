@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+    <link rel="icon" href="~/images/urvan-removebg-preview.png">
+
+	<title>Urban Vet Animal Clinic</title>
+
+	<!-- Vendors Style-->
+	<link rel="stylesheet" href="~/assets/css/vendors_css.css">
+
+	<!-- Style-->
+	<link rel="stylesheet" href="~/assets/css/style.css">
+	<link rel="stylesheet" href="~/assets/css/skin_color.css">
+
+	<!------Sweet Alert------>
+	<link href="~/assets/sweet-alert/sweet-alert.css" rel="stylesheet" />
+	<script src="~/assets/sweet-alert/sweet-alert-bundle-min.js"></script>
+	<script src="~/assets/sweet-alert/sweetalert-jquery.js"></script>
+
+
+</head>
+<body class="hold-transition light-skin sidebar-mini theme-primary fixed">
+    <style>
+        .navbar-brand-logo {
+            height: 40px; /* Adjust the height as needed */
+            width: auto; /* Maintain aspect ratio */
+        }
+
+        .navbar-nav .nav-item .nav-link {
+            color: #000; /* Default link color */
+            padding: 10px 15px;
+            font-weight: 500;
+            transition: color 0.3s ease, background-color 0.3s ease;
+        }
+
+            .navbar-nav .nav-item .nav-link:hover {
+                color: #007bff; /* Color on hover */
+            }
+
+        .navbar-nav .nav-item.active .nav-link {
+            color: #fff; /* Text color when active */
+            background-color: #007bff; /* Background color when active */
+            border-radius: 4px; /* Optional: rounded corners */
+        }
+
+            .navbar-nav .nav-item.active .nav-link:hover {
+                color: #fff; /* Maintain text color on hover when active */
+                background-color: #0056b3; /* Slightly darker background on hover when active */
+            }
+
+    </style>
+	<div class="wrapper">
+
+  
+            <nav class="navbar navbar-expand-lg navbar-white bg-white">
+                <a class="navbar-brand" href="#">
+                    <img src="~/images/urvan-removebg-preview.png" alt="Logo" class="navbar-brand-logo">
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index","Userdashboard")">Home <span></span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("CreateAppoint","AppointSchedule")">Appointment</a>
+                        </li>
+
+                        <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index","UserPatient")" tabindex="-1" aria-disabled="true">My Pets</a>
+                        </li>
+                    </ul>
+
+                    <ul class="navbar-nav ml-auto">
+                        <!-- User Account-->
+                        <li class="nav-item">
+                            <p class="nav-link mb-0">Welcome, @User.Identity.Name!</p>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="icon-User"><span class="path1"></span><span class="path2"></span></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="@Url.Action("Index","UserProfile")"><i class="ti-user text-muted mr-2"></i> Profile</a>
+                            <a class="dropdown-item" href="@Url.Action("Index","UserSettings")"><i class="ti-settings text-muted mr-2"></i> Settings</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="@Url.Action("Logout","UserLogin")"><i class="ti-lock text-muted mr-2"></i> Logout</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+
+   
+
+
+		<!-- Left side column. contains the logo and sidebar -->
+
+
+		<!-- Content Wrapper. Contains page content -->
+	
+            @RenderBody()
+       
+			
+
+		<!-- /.content-wrapper -->
+
+		<footer class="main-footer">
+			&copy; 2024 Urban Vet Animal Clinic. All Rights Reserved.
+		</footer>
+	</div>
+	<!-- ./wrapper -->
+	<!-- Vendor JS -->
+	<script src="~/assets/js/vendors.min.js"></script>
+	<script src="~/assets//icons/feather-icons/feather.min.js"></script>
+
+
+
+
+
+
+	<script src="~/assets/js/template.js"></script>
+
+	<script src="~/assets/vendor_components/datatable/datatables.min.js"></script>
+	<!---Data Tables----->
+	<script src="~/assets/js/pages/data-table.js"></script>
+
+	<!------Toaster---->
+	<script src="~/assets/vendor_components/jquery-toast-plugin-master/src/jquery.toast.js"></script>
+	<script src="~/assets/js/pages/toastr.js"></script>
+	<script src="~/assets/js/pages/notification.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Get the current URL path
+            var path = window.location.pathname;
+
+            // Iterate over each nav link
+            $('.navbar-nav .nav-item .nav-link').each(function () {
+                var href = $(this).attr('href');
+
+                // Check if the link's href matches the current URL
+                if (path === href) {
+                    $(this).closest('.nav-item').addClass('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

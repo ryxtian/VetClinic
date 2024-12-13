@@ -1,0 +1,86 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+@media print {
+    .no-print {
+        display: none;
+    }
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin-bottom: 60px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #000;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+}
+
+.no-print {
+    margin-top: 20px;
+}
+
+/* Print styles */
+@media print {
+    body {
+        margin: 0;
+        padding: 20px;
+        font-size: 12pt; /* Larger font for printing */
+    }
+
+    .container-full {
+        width: 100%;
+    }
+
+    .box {
+        box-shadow: none; /* Remove shadow for print */
+        border: none; /* Remove border for print */
+    }
+
+    h2 {
+        margin-top: 0; /* Remove margin on top for printing */
+    }
+
+    .table {
+        margin-top: 20px;
+        page-break-inside: auto; /* Allow table to break */
+    }
+
+        .table thead {
+            display: table-header-group; /* Keep headers visible on page breaks */
+        }
+
+        .table tbody tr {
+            page-break-inside: avoid; /* Avoid breaking rows */
+        }
+
+    .no-print {
+        display: none; /* Hide the print button */
+    }
+}
